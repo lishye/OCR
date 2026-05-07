@@ -1,0 +1,40 @@
+{
+  "FileName": "IMG_20260423_101904.jpg",
+  "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_101904.jpg",
+  "RelativePath": "IMG_20260423_101904.jpg",
+  "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_101904.json",
+  "OcrProvider": "Paddle",
+  "AiProvider": "ollama",
+  "Barcodes": [
+    {
+      "Format": "QR_CODE",
+      "Value": "G051002139100999#EEHZE1E331V#500#2547#Y5N21D0M30L1#Panasonic#上海英恒电子有限公司",
+      "SourceVariant": "original"
+    }
+  ],
+  "Text": "回 口 2 路 SE L ###发# L PN:G051002139100999 MPN: EEHZE1E331V Description：貼片铝電解電容 Supplier：上海英恒电子有限公司 QTY:500 Date Code:2547 Brand:Panasonic Lot No: Y5N21D0M30L1",
+  "Fields": {
+    "PartNumber": "G051002139100999",
+    "Description": "",
+    "Quantity": "500",
+    "DateCode": "2025-11-17",
+    "LotNo": "Y5N21D0M30L1",
+    "Supplier": "上海英恒电子有限公司",
+    "Brand": "Panasonic",
+    "MPN": "EEHZE1E331V",
+    "PO": "",
+    "HuId": ""
+  },
+  "AliRawStructuredFields": {},
+  "AliRawStructuredJson": "{\"text\":\"回 口 2 路 SE L ###发# L PN:G051002139100999 MPN: EEHZE1E331V Description：貼片铝電解電容 Supplier：上海英恒电子有限公司 QTY:500 Date Code:2547 Brand:Panasonic Lot No: Y5N21D0M30L1\",\"fields\":{},\"lines\":[\"回\",\"口\",\"2\",\"路\",\"SE\",\"L\",\"###发#\",\"L\",\"PN:G051002139100999\",\"MPN:\",\"EEHZE1E331V\",\"Description：貼片铝電解電容\",\"Supplier：上海英恒电子有限公司\",\"QTY:500\",\"Date Code:2547\",\"Brand:Panasonic\",\"Lot No:\",\"Y5N21D0M30L1\"],\"rotation\":0}",
+  "CorrectionNotes": [
+    "PartNumber 被条码纠正: EEHZE1E331V -> G051002139100999",
+    "Supplier 被条码纠正: 上海英恒电子有限公司 QTY -> 上海英恒电子有限公司"
+  ],
+  "AppliedPreprocessing": [
+    "barcode-downscale-2000px",
+    "threshold-128",
+    "ocr-downscale-1500px"
+  ],
+  "Error": null
+}

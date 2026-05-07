@@ -1,0 +1,77 @@
+{
+  "FileName": "IMG_20260423_100854.jpg",
+  "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100854.jpg",
+  "RelativePath": "IMG_20260423_100854.jpg",
+  "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100854.json",
+  "OcrProvider": "Paddle",
+  "AiProvider": "ollama",
+  "Barcodes": [
+    {
+      "Format": "CODE_39",
+      "Value": "3401358961",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "KEMC0805C334K5RACAUTO",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "2612",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_128",
+      "Value": "04476771",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "UPC_E",
+      "Value": "02186146",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "UPC_E",
+      "Value": "06238988",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "261270415",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "4000",
+      "SourceVariant": "original"
+    }
+  ],
+  "Text": "福 CUST P/NKEMC0805C334K5RACAUTO ROHS-PRC CUSTP.0.#3401358961 MEXICO 1 ■ 7 O O 261270415 ID SPL490D 1 04476771 水 KEMET P/NC0805C334K5RACAUT0 KEMET 31433 a YAGEO compan",
+  "Fields": {
+    "PartNumber": "KEMC0805C334K5RACAUTO",
+    "Description": "",
+    "Quantity": "4000",
+    "DateCode": "2026-03-16",
+    "LotNo": "",
+    "Supplier": "",
+    "Brand": "KEMET",
+    "MPN": "KEMC0805C334K5RACAUTO",
+    "PO": "3401358961",
+    "HuId": "261270415"
+  },
+  "AliRawStructuredFields": {},
+  "AliRawStructuredJson": "{\"text\":\"福 CUST P/NKEMC0805C334K5RACAUTO ROHS-PRC CUSTP.0.#3401358961 MEXICO 1 ■ 7 O O 261270415 ID SPL490D 1 04476771 水 KEMET P/NC0805C334K5RACAUT0 KEMET 31433 a YAGEO compan\",\"fields\":{},\"lines\":[\"福\",\"CUST P/NKEMC0805C334K5RACAUTO\",\"ROHS-PRC\",\"CUSTP.0.#3401358961\",\"MEXICO\",\"1\",\"■\",\"7\",\"O\",\"O\",\"261270415\",\"ID\",\"SPL490D\",\"1\",\"04476771\",\"水\",\"KEMET P/NC0805C334K5RACAUT0\",\"KEMET\",\"31433\",\"a YAGEO compan\"],\"rotation\":0}",
+  "CorrectionNotes": [
+    "PO 由条码补全: 3401358961",
+    "HuId 被条码纠正: SPL490D -> 261270415",
+    "Quantity 由条码补全: 4000",
+    "DateCode 由条码补全: 2026-03-16"
+  ],
+  "AppliedPreprocessing": [
+    "barcode-downscale-2000px",
+    "threshold-128",
+    "ocr-downscale-1500px"
+  ],
+  "Error": null
+}

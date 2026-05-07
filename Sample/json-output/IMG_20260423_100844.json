@@ -1,0 +1,65 @@
+{
+  "FileName": "IMG_20260423_100844.jpg",
+  "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100844.jpg",
+  "RelativePath": "IMG_20260423_100844.jpg",
+  "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100844.json",
+  "OcrProvider": "Paddle",
+  "AiProvider": "ollama",
+  "Barcodes": [
+    {
+      "Format": "CODE_39",
+      "Value": "3401358961",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "KEMC0805C334K5RACAUTO",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "2612",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_128",
+      "Value": "04477261",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "261270415",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_39",
+      "Value": "4000",
+      "SourceVariant": "original"
+    }
+  ],
+  "Text": "RoHS-PRC CUSTP.O.# #3401358961 MEXICO OOOODO QUANTITY 4O0O D/C 2612 ID 261270415 SPL490D 0 国 04477261 * KEMET P/NC0805C334K5RACAUT0 KEME 31433 a YAGEO com",
+  "Fields": {
+    "PartNumber": "KEMC0805C334K5RACAUTO",
+    "Description": "",
+    "Quantity": "4000",
+    "DateCode": "2026-03-16",
+    "LotNo": "261270415",
+    "Supplier": "",
+    "Brand": "KEMET",
+    "MPN": "KEMC0805C334K5RACAUTO",
+    "PO": "3401358961",
+    "HuId": "261270415"
+  },
+  "AliRawStructuredFields": {},
+  "AliRawStructuredJson": "{\"text\":\"RoHS-PRC CUSTP.O.# #3401358961 MEXICO OOOODO QUANTITY 4O0O D/C 2612 ID 261270415 SPL490D 0 国 04477261 * KEMET P/NC0805C334K5RACAUT0 KEME 31433 a YAGEO com\",\"fields\":{},\"lines\":[\"RoHS-PRC\",\"CUSTP.O.#\",\"#3401358961\",\"MEXICO\",\"OOOODO\",\"QUANTITY 4O0O\",\"D/C\",\"2612\",\"ID\",\"261270415\",\"SPL490D\",\"0\",\"国\",\"04477261\",\"*\",\"KEMET P/NC0805C334K5RACAUT0\",\"KEME\",\"31433\",\"a YAGEO com\"],\"rotation\":0}",
+  "CorrectionNotes": [
+    "Quantity 由条码补全: 4000",
+    "AI兜底[ollama:qwen2.5:7b] LotNo=261270415 (conf=0.80, Barcode and structured fields)"
+  ],
+  "AppliedPreprocessing": [
+    "barcode-downscale-2000px",
+    "threshold-128",
+    "ocr-downscale-1500px"
+  ],
+  "Error": null
+}

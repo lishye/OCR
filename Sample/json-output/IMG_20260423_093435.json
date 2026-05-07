@@ -1,0 +1,51 @@
+{
+  "FileName": "IMG_20260423_093435.jpg",
+  "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_093435.jpg",
+  "RelativePath": "IMG_20260423_093435.jpg",
+  "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_093435.json",
+  "OcrProvider": "Aliyun",
+  "AiProvider": "bailian",
+  "Barcodes": [
+    {
+      "Format": "QR_CODE",
+      "Value": "G051002139100999#EEHZE1E331V#500#2547#Y5N21D0M40U1#Panasonic#上海英恒电子有限公司",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_128",
+      "Value": "JM-502502",
+      "SourceVariant": "original"
+    }
+  ],
+  "Text": "Brand: Panasonic LotNo: Y5N21D0M40U1 Description: 貼片铝電解電容 DateCode: 2547 QTY: 500 MPN: EEHZE1E331V Supplier: 上海英恒电子有限公司 PN: G051002139100999",
+  "Fields": {
+    "PartNumber": "G051002139100999",
+    "Description": "貼片铝電解電容",
+    "Quantity": "500",
+    "DateCode": "2025-11-17",
+    "LotNo": "Y5N21D0M40U1",
+    "Supplier": "上海英恒电子有限公司",
+    "Brand": "Panasonic",
+    "MPN": "EEHZE1E331V",
+    "PO": "",
+    "HuId": ""
+  },
+  "AliRawStructuredFields": {
+    "Brand": "Panasonic",
+    "LotNo": "Y5N21D0M40U1",
+    "Description": "貼片铝電解電容",
+    "DateCode": "2547",
+    "QTY": "500",
+    "MPN": "EEHZE1E331V",
+    "Supplier": "上海英恒电子有限公司",
+    "PN": "G051002139100999"
+  },
+  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Thu, 07 May 2026 07:05:17 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"E2BEC2D3-B7CF-5B24-AD2D-3C25A8399A92\",\"x-acs-trace-id\":\"4671b8a9117d0dd9c7d1777d790edb69\",\"etag\":\"38aWWrqSRyITjTJSGnhlNMQ4\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":3072,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":1,\"KvInfo\":{\"Data\":{\"Brand\":\"Panasonic\",\"LotNo\":\"Y5N21D0M40U1\",\"Description\":\"貼片铝電解電容\",\"DateCode\":\"2547\",\"QTY\":\"500\",\"MPN\":\"EEHZE1E331V\",\"Supplier\":\"上海英恒电子有限公司\",\"PN\":\"G051002139100999\"},\"KvCount\":8},\"SubImageId\":0}],\"Width\":4096},\"Message\":null,\"RequestId\":\"E2BEC2D3-B7CF-5B24-AD2D-3C25A8399A92\"}}",
+  "CorrectionNotes": [],
+  "AppliedPreprocessing": [
+    "barcode-downscale-2000px",
+    "threshold-128",
+    "ocr-downscale-1500px"
+  ],
+  "Error": null
+}

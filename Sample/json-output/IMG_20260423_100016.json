@@ -1,0 +1,77 @@
+{
+  "FileName": "IMG_20260423_100016.jpg",
+  "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100016.jpg",
+  "RelativePath": "IMG_20260423_100016.jpg",
+  "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100016.json",
+  "OcrProvider": "Aliyun",
+  "AiProvider": "bailian",
+  "Barcodes": [
+    {
+      "Format": "QR_CODE",
+      "Value": "DC135025042202-0019\u0000",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_128",
+      "Value": "J18",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "ITF",
+      "Value": "30051712013575",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "ITF",
+      "Value": "3005171201",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_128",
+      "Value": "250",
+      "SourceVariant": "original"
+    }
+  ],
+  "Text": "(Q): 250 1W272CM: (P): HCM1A1305V2-R22-R1 Description: Inductor EAT·N: Magnetics (1L): Made in China 30051712013575: (9D): J J18 4516019951: HCM1A1305V2-R22-R1: 250: ES:",
+  "Fields": {
+    "PartNumber": "HCM1A1305V2-R22-R1",
+    "Description": "Inductor",
+    "Quantity": "250",
+    "DateCode": "",
+    "LotNo": "J18",
+    "Supplier": "",
+    "Brand": "EATON",
+    "MPN": "HCM1A1305V2-R22-R1",
+    "PO": "3005171201",
+    "HuId": ""
+  },
+  "AliRawStructuredFields": {
+    "(Q)": "250",
+    "1W272CM": "",
+    "(P)": "HCM1A1305V2-R22-R1",
+    "Description": "Inductor",
+    "EAT·N": "Magnetics",
+    "(1L)": "Made in China",
+    "30051712013575": "",
+    "(9D)": "J J18",
+    "4516019951": "",
+    "HCM1A1305V2-R22-R1": "",
+    "250": "",
+    "ES": ""
+  },
+  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Thu, 07 May 2026 07:05:36 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"F2C495D6-78F1-5704-AB85-DC4D8F80326B\",\"x-acs-trace-id\":\"67a57c97c25ca38166bc02978498ac18\",\"etag\":\"3SZYIdPCwKgkuhuDOT87QCA2\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":3072,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":2,\"KvInfo\":{\"Data\":{\"(Q)\":\"250\",\"1W272CM\":\"\",\"(P)\":\"HCM1A1305V2-R22-R1\",\"Description\":\"Inductor\",\"EAT·N\":\"Magnetics\",\"(1L)\":\"Made in China\",\"30051712013575\":\"\",\"(9D)\":\"J J18\",\"4516019951\":\"\",\"HCM1A1305V2-R22-R1\":\"\",\"250\":\"\",\"ES\":\"\"},\"KvCount\":12},\"SubImageId\":0}],\"Width\":4096},\"Message\":null,\"RequestId\":\"F2C495D6-78F1-5704-AB85-DC4D8F80326B\"}}",
+  "CorrectionNotes": [
+    "PO 由条码补全: 3005171201",
+    "Quantity 由条码补全: 250",
+    "AI兜底[bailian:deepseek-v4-flash] PartNumber=HCM1A1305V2-R22-R1 (conf=0.95, OCR text: (P): HCM1A1305V2-R22-R1; also appears in OCR as standalone)",
+    "AI兜底[bailian:deepseek-v4-flash] MPN=HCM1A1305V2-R22-R1 (conf=0.95, Same as PartNumber from OCR)",
+    "AI兜底[bailian:deepseek-v4-flash] LotNo=J18 (conf=0.90, Barcode second value J18; OCR (9D): J J18)",
+    "AI兜底[bailian:deepseek-v4-flash] Brand=EATON (conf=0.70, OCR: EAT·N: Magnetics (likely EATON))"
+  ],
+  "AppliedPreprocessing": [
+    "barcode-downscale-2000px",
+    "threshold-128",
+    "ocr-downscale-1500px"
+  ],
+  "Error": null
+}

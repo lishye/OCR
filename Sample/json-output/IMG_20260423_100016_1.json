@@ -1,0 +1,65 @@
+{
+  "FileName": "IMG_20260423_100016_1.jpg",
+  "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100016_1.jpg",
+  "RelativePath": "IMG_20260423_100016_1.jpg",
+  "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100016_1.json",
+  "OcrProvider": "Paddle",
+  "AiProvider": "ollama",
+  "Barcodes": [
+    {
+      "Format": "QR_CODE",
+      "Value": "DC135025042202-0019\u0000",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_128",
+      "Value": "J18",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "ITF",
+      "Value": "30051712013575",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "ITF",
+      "Value": "3005171201",
+      "SourceVariant": "original"
+    },
+    {
+      "Format": "CODE_128",
+      "Value": "250",
+      "SourceVariant": "original"
+    }
+  ],
+  "Text": "AT ·N 三 1 Magnetics HIII 30051712013575 Description:Inductor (P) HCM1A1305V2-R22-R1 (P) HCM1A1305V2-R22-R1 (Q) 250 (Q) 250 川 (T) 1W272CM 3 福 (9D) (K) 4516019951 J18 (1L)N Made in China 品品 可柔",
+  "Fields": {
+    "PartNumber": "HCM1A1305V2-R22-R1",
+    "Description": "",
+    "Quantity": "250",
+    "DateCode": "",
+    "LotNo": "3005171201",
+    "Supplier": "",
+    "Brand": "Magnetics",
+    "MPN": "30051712013575",
+    "PO": "3005171201",
+    "HuId": "4516019951"
+  },
+  "AliRawStructuredFields": {},
+  "AliRawStructuredJson": "{\"text\":\"AT ·N 三 1 Magnetics HIII 30051712013575 Description:Inductor (P) HCM1A1305V2-R22-R1 (P) HCM1A1305V2-R22-R1 (Q) 250 (Q) 250 川 (T) 1W272CM 3 福 (9D) (K) 4516019951 J18 (1L)N Made in China 品品 可柔\",\"fields\":{},\"lines\":[\"AT\",\"·N\",\"三\",\"1\",\"Magnetics\",\"HIII\",\"30051712013575\",\"Description:Inductor\",\"(P)\",\"HCM1A1305V2-R22-R1\",\"(P)\",\"HCM1A1305V2-R22-R1\",\"(Q)\",\"250\",\"(Q)\",\"250\",\"川\",\"(T)\",\"1W272CM\",\"3\",\"福\",\"(9D)\",\"(K)\",\"4516019951\",\"J18\",\"(1L)N\",\"Made in China\",\"品品\",\"可柔\"],\"rotation\":0}",
+  "CorrectionNotes": [
+    "PO 由条码补全: 3005171201",
+    "Quantity 由条码补全: 250",
+    "AI兜底[ollama:qwen2.5:7b] PartNumber=HCM1A1305V2-R22-R1 (conf=0.90, Inductor (P) HCM1A1305V2-R22-R1 (P))",
+    "AI兜底[ollama:qwen2.5:7b] MPN=30051712013575 (conf=1.00, 30051712013575)",
+    "AI兜底[ollama:qwen2.5:7b] LotNo=3005171201 (conf=1.00, 3005171201)",
+    "AI兜底[ollama:qwen2.5:7b] Brand=Magnetics (conf=0.80, 三 1 Magnetics HIII)",
+    "AI兜底[ollama:qwen2.5:7b] HuId=4516019951 (conf=0.80, 4516019951 J18)"
+  ],
+  "AppliedPreprocessing": [
+    "barcode-downscale-2000px",
+    "threshold-128",
+    "ocr-downscale-1500px"
+  ],
+  "Error": null
+}
