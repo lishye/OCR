@@ -12,6 +12,7 @@ app = FastAPI(title="OpenVINO LLM Qwen2.5 INT4 Service", version="2.0.0")
 _llm_lock = threading.Lock()
 _llm_pipe: Any | None = None
 _LLM_MODEL_DIR = r"D:\source\Research\C#\OpenVINO\qwen2.5_7b_ov_int4"
+#_LLM_MODEL_DIR = r"D:\source\Research\C#\OpenVINO\qwen2.5_1.5b_ov_int4"
 _LLM_DEVICE = "GPU"  # 可改为 "NPU" 或 "CPU"
 
 

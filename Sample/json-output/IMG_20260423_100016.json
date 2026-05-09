@@ -3,13 +3,13 @@
   "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100016.jpg",
   "RelativePath": "IMG_20260423_100016.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100016.json",
-  "OcrProvider": "Windows",
-  "AiProvider": "mock",
+  "OcrProvider": "Aliyun",
+  "AiProvider": "openvino",
   "Barcodes": [
     {
-      "Format": "QR_CODE",
+      "Format": "WECHAT_QRCODE",
       "Value": "DC135025042202-0019\u0000",
-      "SourceVariant": "original"
+      "SourceVariant": "original+wechat"
     },
     {
       "Format": "CODE_128",
@@ -32,24 +32,39 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "回 「 ℃ 引 0 （ 0 ） 回 钆 叫 0 U! 9Pel,AJ 66 9 ^ 0 乙 L 乙 M 《 的 旧 閶 1 适 · 院 乙 ^ go ^ OH 上 ． & 乙 ^ go 以 OH （ 引 」 0 np 叫 」 osaa 9LS 巴 000 芤 眉 牖 鼎",
+  "Text": ": HCM1A1305V2-R22-R1 (Q): 250 1W272CM: (P): HCM1A1305V2-R22-R1 Description: Inductor EAT·N: Magnetics (1L): Made in China 30051712013575: (9D): J J18 4516019951: 250: ES:",
   "Fields": {
-    "PartNumber": "",
-    "Description": "",
+    "PartNumber": "HCM1A1305V2-R22-R1",
+    "Description": "Inductor",
     "Quantity": "250",
-    "DateCode": "",
+    "DateCode": "300517",
     "LotNo": "",
     "Supplier": "",
     "Brand": "",
     "MPN": "",
     "PO": "3005171201",
-    "HuId": null
+    "HuId": ""
   },
-  "AliRawStructuredFields": null,
-  "AliRawStructuredJson": null,
+  "AliRawStructuredFields": {
+    "": "HCM1A1305V2-R22-R1",
+    "(Q)": "250",
+    "1W272CM": "",
+    "(P)": "HCM1A1305V2-R22-R1",
+    "Description": "Inductor",
+    "EAT·N": "Magnetics",
+    "(1L)": "Made in China",
+    "30051712013575": "",
+    "(9D)": "J J18",
+    "4516019951": "",
+    "250": "",
+    "ES": ""
+  },
+  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Sat, 09 May 2026 09:16:29 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"678B917C-CC73-55EF-B1AC-775062000D45\",\"x-acs-trace-id\":\"45ac49248a22d5ddc416712842336f0b\",\"etag\":\"3nVPJSLvFXQXARtv8LiShWA2\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":3072,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":2,\"KvInfo\":{\"Data\":{\"\":\"HCM1A1305V2-R22-R1\",\"(Q)\":\"250\",\"1W272CM\":\"\",\"(P)\":\"HCM1A1305V2-R22-R1\",\"Description\":\"Inductor\",\"EAT·N\":\"Magnetics\",\"(1L)\":\"Made in China\",\"30051712013575\":\"\",\"(9D)\":\"J J18\",\"4516019951\":\"\",\"250\":\"\",\"ES\":\"\"},\"KvCount\":12},\"SubImageId\":0}],\"Width\":4096},\"Message\":null,\"RequestId\":\"678B917C-CC73-55EF-B1AC-775062000D45\"}}",
   "CorrectionNotes": [
     "PO 由条码补全: 3005171201",
-    "Quantity 由条码补全: 250"
+    "Quantity 由条码补全: 250",
+    "AI兜底[openvino] PartNumber=HCM1A1305V2-R22-R1 (conf=0.85, flat-json)",
+    "AI兜底[openvino] DateCode=300517 (conf=0.85, flat-json)"
   ],
   "AppliedPreprocessing": [
     "barcode-downscale-2000px",
@@ -57,9 +72,9 @@
     "ocr-downscale-1500px"
   ],
   "AiDebug": {
-    "Provider": "mock-ai-v1",
-    "Prompt": null,
-    "RawResponse": "{\"Quantity\":{\"Value\":\"0019\",\"Confidence\":0.72,\"Evidence\":\"mock-ai: barcode numeric fallback\"},\"PO\":{\"Value\":\"3005171201\",\"Confidence\":0.84,\"Evidence\":\"mock-ai: 10-digit barcode\"}}"
+    "Provider": "openvino",
+    "Prompt": "Extract electronic component data. Output ONLY JSON.\r\nFields: PartNumber, Quantity, LotNo, DateCode\r\n\r\nOutput format: {\"PartNumber\":\"value\",\"Quantity\":\"value\",\"LotNo\":\"value\",\"DateCode\":\"value\"}\r\n\r\nRules:\r\n- Quantity should be numeric only when possible.\r\n- Only fill fields you are reasonably sure about.\r\n- Stop immediately after the closing JSON brace. No extra notes.\r\n- LotNo: extract from OCR or Barcode if available\r\n- Skip fields with empty values (omit from output).\r\n\r\nInput:\r\nBarcode: DC135025042202-0019\u0000 | J18 | 30051712013575 | 3005171201 | 250\r\nOCR: {\"\":\"HCM1A1305V2-R22-R1\",\"(Q)\":\"250\",\"1W272CM\":\"\",\"(P)\":\"HCM1A1305V2-R22-R1\",\"Description\":\"Inductor\",\"EAT\\u00B7N\":\"Magnetics\",\"(1L)\":\"Made in China\",\"30051712013575\":\"\",\"(9D)\":\"J J18\",\"4516019951\":\"\",\"250\":\"\",\"ES\":\"\"}\r\n\r\nJSON Result Only:\r\n",
+    "RawResponse": "{\"PartNumber\":\"HCM1A1305V2-R22-R1\",\"Quantity\":\"250\",\"DateCode\":\"300517\"}"
   },
   "Error": null
 }

@@ -158,7 +158,7 @@ internal sealed class OcrProcessor
                 }
                 else
                 {
-                    progress?.Report($"  AI补全-输入: 已跳过，Current={FormatFieldsForLog(corrected, isDetailedLog)}");
+                    progress?.Report($"  AI补全-输入: 已跳过（关键字段齐全），Current={FormatFieldsForLog(corrected, isDetailedLog)}");
                 }
 
                 var aiApply = await ApplyAiProviderAsync(ocr, barcodes, corrected, mergedNotes, progress, isDetailedLog, cancellationToken);
@@ -311,15 +311,9 @@ internal sealed class OcrProcessor
     {
         var items = new List<string>();
         AddIfNotEmpty(items, "PartNumber", fields.PartNumber, isDetailedLog);
-        AddIfNotEmpty(items, "MPN", fields.MPN, isDetailedLog);
         AddIfNotEmpty(items, "Quantity", fields.Quantity, isDetailedLog);
-        AddIfNotEmpty(items, "DateCode", fields.DateCode, isDetailedLog);
         AddIfNotEmpty(items, "LotNo", fields.LotNo, isDetailedLog);
-        AddIfNotEmpty(items, "Brand", fields.Brand, isDetailedLog);
-        AddIfNotEmpty(items, "Supplier", fields.Supplier, isDetailedLog);
-        AddIfNotEmpty(items, "PO", fields.PO, isDetailedLog);
-        AddIfNotEmpty(items, "HuId", fields.HuId, isDetailedLog);
-
+        AddIfNotEmpty(items, "DateCode", fields.DateCode, isDetailedLog);
         return items.Count == 0 ? "empty" : string.Join(", ", items);
     }
 
@@ -341,10 +335,9 @@ internal sealed class OcrProcessor
     private static bool ShouldUseAiProvider(ExtractedFields fields)
     {
         return string.IsNullOrWhiteSpace(fields.PartNumber)
-            || string.IsNullOrWhiteSpace(fields.MPN)
             || string.IsNullOrWhiteSpace(fields.Quantity)
             || string.IsNullOrWhiteSpace(fields.LotNo)
-            || string.IsNullOrWhiteSpace(fields.Brand);
+            || string.IsNullOrWhiteSpace(fields.DateCode);
     }
 
     private static ExtractedFields SetFieldIfEmptyOrLowConfidence(
@@ -358,12 +351,9 @@ internal sealed class OcrProcessor
         string? existing = field switch
         {
             "PartNumber" => current.PartNumber,
-            "MPN" => current.MPN,
             "Quantity" => current.Quantity,
             "LotNo" => current.LotNo,
-            "Brand" => current.Brand,
-            "PO" => current.PO,
-            "HuId" => current.HuId,
+            "DateCode" => current.DateCode,
             _ => null
         };
 
@@ -374,12 +364,9 @@ internal sealed class OcrProcessor
         return field switch
         {
             "PartNumber" => current with { PartNumber = candidate },
-            "MPN" => current with { MPN = candidate },
             "Quantity" => current with { Quantity = NormalizeQuantityValue(candidate) },
             "LotNo" => current with { LotNo = candidate },
-            "Brand" => current with { Brand = candidate },
-            "PO" => current with { PO = candidate },
-            "HuId" => current with { HuId = candidate },
+            "DateCode" => current with { DateCode = candidate },
             _ => current
         };
     }
@@ -1066,10 +1053,10 @@ internal sealed class OcrProcessor
     private static bool IsQrLikeFormat(BarcodeFormat format)
     {
         return format is BarcodeFormat.QR_CODE;
-            // or BarcodeFormat.DATA_MATRIX
-            // or BarcodeFormat.AZTEC
-            // or BarcodeFormat.PDF_417
-            // or BarcodeFormat.MAXICODE;
+        // or BarcodeFormat.DATA_MATRIX
+        // or BarcodeFormat.AZTEC
+        // or BarcodeFormat.PDF_417
+        // or BarcodeFormat.MAXICODE;
     }
 
     private static IReadOnlyList<BarcodeResult> ReadBarcodesByWechatQrCode(ProcessedImage processedImage)

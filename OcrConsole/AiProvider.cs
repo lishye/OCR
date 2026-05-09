@@ -32,15 +32,9 @@ internal static class AiResolverFactory
     private static readonly string[] CandidateFieldNames =
     [
         "PartNumber",
-        "MPN",
         "Quantity",
         "LotNo",
-        "Brand",
-        "PO",
-        "HuId",
-        "Description",
         "DateCode",
-        "Supplier"
     ];
 
     public static IAiFieldResolver CreateFromConfig(string? providerOverride = null)
@@ -112,7 +106,7 @@ internal static class AiResolverFactory
         return new NoopAiFieldResolver();
     }
 
-    internal static string BuildAiPrompt(AiProviderRequest request)
+    internal static string BuildAiPrompt0(AiProviderRequest request)
     {
         var barcodeText = string.Join(" | ", request.Barcodes.Select(b => b.Value));
         var aliRawText = request.AliRawStructuredFields is null
@@ -126,43 +120,65 @@ internal static class AiResolverFactory
         sb.AppendLine();
         sb.AppendLine("Output schema:");
         sb.AppendLine("{");
-        sb.AppendLine("  \"candidates\": {");
-        sb.AppendLine("    \"PartNumber\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"MPN\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"Quantity\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"LotNo\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"Brand\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"PO\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"HuId\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"Description\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"DateCode\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"Supplier\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"}");
-        sb.AppendLine("  }");
+        sb.AppendLine("  \"PartNumber\": \"\",");
+        sb.AppendLine("  \"Quantity\": \"\",");
+        sb.AppendLine("  \"LotNo\": \"\",");
+        sb.AppendLine("  \"DateCode\": \"\"");
         sb.AppendLine("}");
         sb.AppendLine();
         sb.AppendLine("Rules:");
         sb.AppendLine("- Quantity should be numeric only when possible.");
-        sb.AppendLine("- Confidence range is 0..1.");
         sb.AppendLine("- Only fill fields you are reasonably sure about.");
         sb.AppendLine("- Stop immediately after the closing JSON brace. No extra notes.");
         sb.AppendLine();
         sb.AppendLine("Barcode values:");
         sb.AppendLine(barcodeText);
         sb.AppendLine();
-        sb.AppendLine("Ali structured fields:");
-        sb.AppendLine(aliRawText);
-        sb.AppendLine();
+        sb.AppendLine("OCR values:");
         if (aliRawText == "{}")
         {
-            sb.AppendLine("Text content:");
             sb.AppendLine(request.Text);
-            sb.AppendLine();
+        }
+        else
+        {
+            sb.AppendLine(aliRawText);
         }
         //sb.AppendLine("Current fields:");
         //sb.AppendLine(JsonSerializer.Serialize(request.CurrentFields));
 
         return sb.ToString();
     }
+
+    internal static string BuildAiPrompt(AiProviderRequest request)
+    {
+        var barcodeText = string.Join(" | ", request.Barcodes.Select(b => b.Value));
+        var aliRawText = request.AliRawStructuredFields is null
+            ? "{}"
+            : JsonSerializer.Serialize(request.AliRawStructuredFields);
+
+        var sb = new StringBuilder();
+
+        sb.AppendLine("Extract electronic component data. Output ONLY JSON.");
+        sb.AppendLine("Fields: PartNumber, Quantity, LotNo, DateCode");
+        sb.AppendLine();
+        sb.AppendLine("Output format: {\"PartNumber\":\"value\",\"Quantity\":\"value\",\"LotNo\":\"value\",\"DateCode\":\"value\"}");
+        sb.AppendLine();
+        sb.AppendLine("Rules:");
+        sb.AppendLine("- Quantity should be numeric only when possible.");
+        sb.AppendLine("- Only fill fields you are reasonably sure about.");
+        sb.AppendLine("- Stop immediately after the closing JSON brace. No extra notes.");
+        sb.AppendLine("- LotNo: extract from OCR or Barcode if available"); 
+        sb.AppendLine("- Skip fields with empty values (omit from output).");
+        sb.AppendLine();
+        sb.AppendLine("Input:");
+        sb.AppendLine($"Barcode: {barcodeText}");
+        sb.AppendLine($"OCR: {(aliRawText == "{}" ? request.Text : aliRawText)}");
+        sb.AppendLine();
+        sb.AppendLine("JSON Result Only:");
+
+        return sb.ToString();
+    }
+
 
     internal static Dictionary<string, AiFieldCandidate> ParseAiCandidates(string responseText)
     {
@@ -299,6 +315,38 @@ internal static class AiResolverFactory
         {
             if (doc is null) return false;
 
+            // Preferred schema: flat JSON with 3 string fields.
+            if (doc.RootElement.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var fieldName in CandidateFieldNames)
+                {
+                    if (!doc.RootElement.TryGetProperty(fieldName, out var node))
+                    {
+                        continue;
+                    }
+
+                    string? value = node.ValueKind switch
+                    {
+                        JsonValueKind.String => node.GetString(),
+                        JsonValueKind.Number => node.ToString(),
+                        JsonValueKind.Null => null,
+                        _ => node.ToString()
+                    };
+
+                    if (string.IsNullOrWhiteSpace(value))
+                    {
+                        continue;
+                    }
+
+                    map[fieldName] = new AiFieldCandidate(value, 0.85, "flat-json");
+                }
+
+                if (map.Count > 0)
+                {
+                    return true;
+                }
+            }
+
             if (!doc.RootElement.TryGetProperty("candidates", out var candidatesNode) || candidatesNode.ValueKind != JsonValueKind.Object)
             {
                 return false;
@@ -324,6 +372,27 @@ internal static class AiResolverFactory
     {
         foreach (var fieldName in CandidateFieldNames)
         {
+            var flatFieldPattern = $"\\\"{Regex.Escape(fieldName)}\\\"\\s*:\\s*(\\\"(?<fv>(?:\\\\.|[^\\\"])*)\\\"|(?<fn>-?[0-9]+(?:\\.[0-9]+)?)|null)";
+            var flatFieldMatch = Regex.Match(responseText, flatFieldPattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            if (flatFieldMatch.Success)
+            {
+                string? flatValue = null;
+                if (flatFieldMatch.Groups["fv"].Success)
+                {
+                    flatValue = UnescapeJsonString(flatFieldMatch.Groups["fv"].Value);
+                }
+                else if (flatFieldMatch.Groups["fn"].Success)
+                {
+                    flatValue = flatFieldMatch.Groups["fn"].Value;
+                }
+
+                if (!string.IsNullOrWhiteSpace(flatValue))
+                {
+                    map[fieldName] = new AiFieldCandidate(flatValue, 0.8, "flat-json-regex");
+                    continue;
+                }
+            }
+
             var fieldPattern = $"\\\"{Regex.Escape(fieldName)}\\\"\\s*:\\s*\\{{(?<obj>.*?)\\}}";
             var fieldMatch = Regex.Match(responseText, fieldPattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
             if (!fieldMatch.Success)
@@ -434,7 +503,11 @@ internal sealed class OllamaAiFieldResolver : IAiFieldResolver
                 num_batch = _numBatch,
                 temperature = 0.1,
                 top_p = 0.9
-            }
+            },
+            // extra_body = new
+            // {
+            //     enable_thinking = false
+            // }
         };
 
         using var response = await _httpClient.PostAsJsonAsync("api/generate", payload, cancellationToken);

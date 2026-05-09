@@ -3,8 +3,8 @@
   "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_094206.jpg",
   "RelativePath": "IMG_20260423_094206.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_094206.json",
-  "OcrProvider": "Windows",
-  "AiProvider": "mock",
+  "OcrProvider": "Paddle",
+  "AiProvider": "bailian",
   "Barcodes": [
     {
       "Format": "QR_CODE",
@@ -12,7 +12,7 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "0 0 、 0 G-PLJLSE 丷 金 脉 PN ． G 1002139100999 EEHZEIE331V Description: 貼 片 铝 電 解 電 容 Supptier• 上 海 英 恒 电 子 有 限 公 司 QTY ． 5 Date Code 2547 Brand Panasomc L01 No Y5N22DOM2021",
+  "Text": "口 口 G-PULSE 金脉 PN:G051002139100999 MPN:EEHZE1E331V Description：貼片铝電解電容 Supplier：上海英恒电子有限公司 QTY:500 Date Code:2547 Brand:Panasonic Lot No: Y5N22D0M2021",
   "Fields": {
     "PartNumber": "G051002139100999",
     "Description": "",
@@ -22,17 +22,14 @@
     "Supplier": "上海英恒电子有限公司",
     "Brand": "Panasonic",
     "MPN": "EEHZE1E331V",
-    "PO": null,
-    "HuId": null
+    "PO": "",
+    "HuId": ""
   },
-  "AliRawStructuredFields": null,
-  "AliRawStructuredJson": null,
+  "AliRawStructuredFields": {},
+  "AliRawStructuredJson": "{\"text\":\"口 口 G-PULSE 金脉 PN:G051002139100999 MPN:EEHZE1E331V Description：貼片铝電解電容 Supplier：上海英恒电子有限公司 QTY:500 Date Code:2547 Brand:Panasonic Lot No: Y5N22D0M2021\",\"fields\":{},\"lines\":[\"口\",\"口\",\"G-PULSE\",\"金脉\",\"PN:G051002139100999\",\"MPN:EEHZE1E331V\",\"Description：貼片铝電解電容\",\"Supplier：上海英恒电子有限公司\",\"QTY:500\",\"Date Code:2547\",\"Brand:Panasonic\",\"Lot No:\",\"Y5N22D0M2021\"],\"rotation\":0}",
   "CorrectionNotes": [
     "PartNumber 被条码纠正: EEHZE1E331V -> G051002139100999",
-    "Quantity 由条码补全: 500",
-    "LotNo 由条码补全: Y5N22D0M2021",
-    "Brand 由条码补全: Panasonic",
-    "Supplier 由条码补全: 上海英恒电子有限公司"
+    "Supplier 被条码纠正: 上海英恒电子有限公司 QTY -> 上海英恒电子有限公司"
   ],
   "AppliedPreprocessing": [
     "barcode-downscale-2000px",

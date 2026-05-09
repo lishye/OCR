@@ -3,8 +3,8 @@
   "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_095024.jpg",
   "RelativePath": "IMG_20260423_095024.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_095024.json",
-  "OcrProvider": "Windows",
-  "AiProvider": "mock",
+  "OcrProvider": "Paddle",
+  "AiProvider": "bailian",
   "Barcodes": [
     {
       "Format": "CODE_39",
@@ -22,21 +22,21 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "《 自 白 厚 331v （ 3 N ） £ Y 5 N 2 1 D 0 3 0 N 1 1 0 8 0 1 0 ． lllllllllll 眉 肌 肌 脯 拥 IIIII 群 II\\IIII\\II 0 XED ALUMINUM ELECTROLYT | C CAPAC ITOR 5Q03 33 F 25V × 10 5 EEHZElE331V Serial 、 Y5N212 3 以 1 Panasonic lndu$try CO., Lld. Panasonic 1 1 E IAJ C-3 hADE 》 、 JAPAN 〕 22",
+  "Text": "EEHZE1E331V 5 08 D FIXED ALUMINUM ELECTROLYTIC CAPACITOR 500 pcs 330uF 25V EEHZE1E331V 10 ×10. 5 Serial No.Y5N21D0M30N1 Panasonic Industry Co..Ltd 20251123 EIAJ'C-3 MADE IN JAPAN 022 Panasonic",
   "Fields": {
     "PartNumber": "EEHZE1E331V",
-    "Description": "",
+    "Description": "FIXED ALUMINUM ELECTROLYTIC CAPACITOR",
     "Quantity": "500",
     "DateCode": "",
     "LotNo": "Y5N21D0M30N1",
     "Supplier": "",
     "Brand": "Panasonic",
     "MPN": "EEHZE1E331V",
-    "PO": null,
-    "HuId": null
+    "PO": "",
+    "HuId": ""
   },
-  "AliRawStructuredFields": null,
-  "AliRawStructuredJson": null,
+  "AliRawStructuredFields": {},
+  "AliRawStructuredJson": "{\"text\":\"EEHZE1E331V 5 08 D FIXED ALUMINUM ELECTROLYTIC CAPACITOR 500 pcs 330uF 25V EEHZE1E331V 10 ×10. 5 Serial No.Y5N21D0M30N1 Panasonic Industry Co..Ltd 20251123 EIAJ'C-3 MADE IN JAPAN 022 Panasonic\",\"fields\":{},\"lines\":[\"EEHZE1E331V\",\"5\",\"08\",\"D\",\"FIXED ALUMINUM\",\"ELECTROLYTIC CAPACITOR\",\"500\",\"pcs\",\"330uF\",\"25V\",\"EEHZE1E331V\",\"10\",\"×10. 5\",\"Serial No.Y5N21D0M30N1\",\"Panasonic Industry Co..Ltd\",\"20251123\",\"EIAJ'C-3\",\"MADE\",\"IN JAPAN\",\"022\",\"Panasonic\"],\"rotation\":0}",
   "CorrectionNotes": [],
   "AppliedPreprocessing": [
     "threshold-128"

@@ -629,12 +629,13 @@ internal sealed class MainForm : Form
         static string V(Dictionary<string, string> m, string k) => m.TryGetValue(k, out var v) ? v : "-";
 
         var sb = new StringBuilder();
-        sb.Append($"PartNumber: {V(map, "PartNumber")}    MPN: {V(map, "MPN")}");
+        sb.Append($"PartNumber: {V(map, "PartNumber")} ");
         sb.Append("\r\n");
-        sb.Append($"Quantity: {V(map, "Quantity")}    DateCode: {V(map, "DateCode")}    LotNo: {V(map, "LotNo")}");
+        sb.Append($"Quantity: {V(map, "Quantity")}");
         sb.Append("\r\n");
-        sb.Append($"Brand: {V(map, "Brand")}    Supplier: {V(map, "Supplier")}");
-        sb.Append($"    PO: {V(map, "PO")}    HuId: {V(map, "HuId")}");
+        sb.Append($"DateCode: {V(map, "DateCode")}");
+        sb.Append("\r\n");
+        sb.Append($"LotNo: {V(map, "LotNo")}");
         return sb.ToString();
     }
 
