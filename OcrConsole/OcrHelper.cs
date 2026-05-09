@@ -1,3 +1,4 @@
+using System.Configuration;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -41,4 +42,27 @@ internal static class JsonDisplayHelper
             return json;
         }
     }
+}
+
+internal static class SettingHelper
+{
+
+    public static string? GetSettingOrEnv(string appSettingKey, params string[] envKeys)
+    {
+        foreach (var envKey in envKeys)
+        {
+            var envValue = Environment.GetEnvironmentVariable(envKey);
+            if (!string.IsNullOrWhiteSpace(envValue)) return envValue;
+        }
+
+        var settingValue = ConfigurationManager.AppSettings[appSettingKey];
+        return string.IsNullOrWhiteSpace(settingValue) ? null : settingValue;
+    }
+
+    public static int ParseInt(string? text, int defaultValue)
+    {
+        if (int.TryParse(text, out var parsed)) return parsed;
+        return defaultValue;
+    }
+
 }

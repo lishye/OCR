@@ -3,7 +3,7 @@
   "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100016_1.jpg",
   "RelativePath": "IMG_20260423_100016_1.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100016_1.json",
-  "OcrProvider": "Paddle",
+  "OcrProvider": "Aliyun",
   "AiProvider": "ollama",
   "Barcodes": [
     {
@@ -32,34 +32,47 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "AT ·N 三 1 Magnetics HIII 30051712013575 Description:Inductor (P) HCM1A1305V2-R22-R1 (P) HCM1A1305V2-R22-R1 (Q) 250 (Q) 250 川 (T) 1W272CM 3 福 (9D) (K) 4516019951 J18 (1L)N Made in China 品品 可柔",
+  "Text": "(Q): 250 1W272CM: (P): HCM1A1305V2-R22-R1 Description: Inductor EAT·N: Magnetics (1L): Made in China 30051712013575: (9D): J J18 4516019951: HCM1A1305V2-R22-R1: 250:",
   "Fields": {
-    "PartNumber": "HCM1A1305V2-R22-R1",
-    "Description": "",
+    "PartNumber": "",
+    "Description": "Inductor",
     "Quantity": "250",
     "DateCode": "",
-    "LotNo": "3005171201",
+    "LotNo": "",
     "Supplier": "",
-    "Brand": "Magnetics",
-    "MPN": "30051712013575",
+    "Brand": "",
+    "MPN": "HCM1A1305V2-R22-R1",
     "PO": "3005171201",
-    "HuId": "4516019951"
+    "HuId": ""
   },
-  "AliRawStructuredFields": {},
-  "AliRawStructuredJson": "{\"text\":\"AT ·N 三 1 Magnetics HIII 30051712013575 Description:Inductor (P) HCM1A1305V2-R22-R1 (P) HCM1A1305V2-R22-R1 (Q) 250 (Q) 250 川 (T) 1W272CM 3 福 (9D) (K) 4516019951 J18 (1L)N Made in China 品品 可柔\",\"fields\":{},\"lines\":[\"AT\",\"·N\",\"三\",\"1\",\"Magnetics\",\"HIII\",\"30051712013575\",\"Description:Inductor\",\"(P)\",\"HCM1A1305V2-R22-R1\",\"(P)\",\"HCM1A1305V2-R22-R1\",\"(Q)\",\"250\",\"(Q)\",\"250\",\"川\",\"(T)\",\"1W272CM\",\"3\",\"福\",\"(9D)\",\"(K)\",\"4516019951\",\"J18\",\"(1L)N\",\"Made in China\",\"品品\",\"可柔\"],\"rotation\":0}",
+  "AliRawStructuredFields": {
+    "(Q)": "250",
+    "1W272CM": "",
+    "(P)": "HCM1A1305V2-R22-R1",
+    "Description": "Inductor",
+    "EAT·N": "Magnetics",
+    "(1L)": "Made in China",
+    "30051712013575": "",
+    "(9D)": "J J18",
+    "4516019951": "",
+    "HCM1A1305V2-R22-R1": "",
+    "250": ""
+  },
+  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Fri, 08 May 2026 02:33:19 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"75FDFA1D-3FA4-557A-BBB2-665BAD3DB604\",\"x-acs-trace-id\":\"48eb6b7569eed6d8b97ed7b680493115\",\"etag\":\"3MC4wIKkXcgTPf1pAC+HwVw6\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":3072,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":182,\"KvInfo\":{\"Data\":{\"(Q)\":\"250\",\"1W272CM\":\"\",\"(P)\":\"HCM1A1305V2-R22-R1\",\"Description\":\"Inductor\",\"EAT·N\":\"Magnetics\",\"(1L)\":\"Made in China\",\"30051712013575\":\"\",\"(9D)\":\"J J18\",\"4516019951\":\"\",\"HCM1A1305V2-R22-R1\":\"\",\"250\":\"\"},\"KvCount\":11},\"SubImageId\":0}],\"Width\":4096},\"Message\":null,\"RequestId\":\"75FDFA1D-3FA4-557A-BBB2-665BAD3DB604\"}}",
   "CorrectionNotes": [
     "PO 由条码补全: 3005171201",
     "Quantity 由条码补全: 250",
-    "AI兜底[ollama:qwen2.5:7b] PartNumber=HCM1A1305V2-R22-R1 (conf=0.90, Inductor (P) HCM1A1305V2-R22-R1 (P))",
-    "AI兜底[ollama:qwen2.5:7b] MPN=30051712013575 (conf=1.00, 30051712013575)",
-    "AI兜底[ollama:qwen2.5:7b] LotNo=3005171201 (conf=1.00, 3005171201)",
-    "AI兜底[ollama:qwen2.5:7b] Brand=Magnetics (conf=0.80, 三 1 Magnetics HIII)",
-    "AI兜底[ollama:qwen2.5:7b] HuId=4516019951 (conf=0.80, 4516019951 J18)"
+    "AI兜底[ollama:qwen2.5:7b] MPN=HCM1A1305V2-R22-R1 (conf=1.00, (P))"
   ],
   "AppliedPreprocessing": [
     "barcode-downscale-2000px",
     "threshold-128",
     "ocr-downscale-1500px"
   ],
+  "AiDebug": {
+    "Provider": "ollama:qwen2.5:7b",
+    "Prompt": "You are an OCR post-processing assistant.\r\nExtract fields from OCR and barcode data.\r\nReturn STRICT JSON only. No markdown. Unknown value return null.\r\n\r\nOutput schema:\r\n{\r\n  \"candidates\": {\r\n    \"PartNumber\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"MPN\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Quantity\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"LotNo\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Brand\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"PO\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"HuId\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"}\n\r\n  }\r\n}\r\n\r\nRules:\r\n- Quantity should be numeric only when possible.\r\n- Confidence range is 0..1.\r\n- Only fill fields you are reasonably sure about.\r\n\r\nBarcode values:\r\nDC135025042202-0019\u0000 | J18 | 30051712013575 | 3005171201 | 250\r\n\r\nAli structured fields:\r\n{\"(Q)\":\"250\",\"1W272CM\":\"\",\"(P)\":\"HCM1A1305V2-R22-R1\",\"Description\":\"Inductor\",\"EAT\\u00B7N\":\"Magnetics\",\"(1L)\":\"Made in China\",\"30051712013575\":\"\",\"(9D)\":\"J J18\",\"4516019951\":\"\",\"HCM1A1305V2-R22-R1\":\"\",\"250\":\"\"}\r\n\r\nCurrent fields:\r\n{\"PartNumber\":\"\",\"Description\":\"Inductor\",\"Quantity\":\"250\",\"DateCode\":\"\",\"LotNo\":\"\",\"Supplier\":\"\",\"Brand\":\"\",\"MPN\":\"\",\"PO\":\"3005171201\",\"HuId\":\"\"}\r\n",
+    "RawResponse": "{\n  \"candidates\": {\n    \"PartNumber\": {\"value\": null, \"confidence\": 0.0, \"evidence\": \"\"},\n    \"MPN\": {\"value\": \"HCM1A1305V2-R22-R1\", \"confidence\": 1.0, \"evidence\": \"(P)\"},\n    \"Quantity\": {\"value\": \"250\", \"confidence\": 1.0, \"evidence\": \"(Q)\"},\n    \"LotNo\": {\"value\": null, \"confidence\": 0.0, \"evidence\": \"\"},\n    \"Brand\": {\"value\": null, \"confidence\": 0.0, \"evidence\": \"\"},\n    \"PO\": {\"value\": \"3005171201\", \"confidence\": 1.0, \"evidence\": \"4516019951\"},\n    \"HuId\": {\"value\": null, \"confidence\": 0.0, \"evidence\": \"\"}\n  }\n}"
+  },
   "Error": null
 }

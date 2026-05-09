@@ -4,7 +4,7 @@
   "RelativePath": "IMG_20260423_095024.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_095024.json",
   "OcrProvider": "Aliyun",
-  "AiProvider": "bailian",
+  "AiProvider": "ollama",
   "Barcodes": [
     {
       "Format": "CODE_39",
@@ -22,7 +22,7 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "产地: MADE IN JAPAN 数值: 5.00 品牌: Panasonic 序列号: Y5N21DOM30N1 型号: EEHZE1E331V 批次号: 022 数量: 500 pcs. 生产日期: 2025 11 23 标准: EIAJC-3 代码: (3N)2 Y5N21D0M30N1 额定电压: 25V 尺寸: 10 × 10.5 制造商: Panasonic Industry Co., Ltd. 容量: 330 µF 类别: FIXED ALUMINUM ELECTROLYTIC CAPACITOR",
+  "Text": "产地: MADE IN JAPAN 品牌: Panasonic 额定容量数值: 5.00 序列号: Y5N21DOM30N1 型号: EEHZE1E331V 批次号: 022 数量: 500 pcs. 生产日期: 2025 11 23 标准: EIAJC-3 额定电压: 25V 尺寸: 10 × 10.5 产品编号: 108010 代码标识: (3N)2 Y5N21D0M30N1 制造商: Panasonic Industry Co., Ltd. 容量: 330 µF 类别: FIXED ALUMINUM ELECTROLYTIC CAPACITOR",
   "Fields": {
     "PartNumber": "EEHZE1E331V",
     "Description": "FIXED ALUMINUM ELECTROLYTIC CAPACITOR",
@@ -37,27 +37,30 @@
   },
   "AliRawStructuredFields": {
     "产地": "MADE IN JAPAN",
-    "数值": "5.00",
     "品牌": "Panasonic",
+    "额定容量数值": "5.00",
     "序列号": "Y5N21DOM30N1",
     "型号": "EEHZE1E331V",
     "批次号": "022",
     "数量": "500 pcs.",
     "生产日期": "2025 11 23",
     "标准": "EIAJC-3",
-    "代码": "(3N)2 Y5N21D0M30N1",
     "额定电压": "25V",
     "尺寸": "10 × 10.5",
+    "产品编号": "108010",
+    "代码标识": "(3N)2 Y5N21D0M30N1",
     "制造商": "Panasonic Industry Co., Ltd.",
     "容量": "330 µF",
     "类别": "FIXED ALUMINUM ELECTROLYTIC CAPACITOR"
   },
-  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Thu, 07 May 2026 07:05:28 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"0E562617-1ABF-51C3-92CA-20A5EF6A8F9A\",\"x-acs-trace-id\":\"0e4852dd9f6eb20c628d82b1f14e7f40\",\"etag\":\"4JbA5m6yzdHS/UySCSdsHFQ5\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":1024,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":1,\"KvInfo\":{\"Data\":{\"产地\":\"MADE IN JAPAN\",\"数值\":\"5.00\",\"品牌\":\"Panasonic\",\"序列号\":\"Y5N21DOM30N1\",\"型号\":\"EEHZE1E331V\",\"批次号\":\"022\",\"数量\":\"500 pcs.\",\"生产日期\":\"2025 11 23\",\"标准\":\"EIAJC-3\",\"代码\":\"(3N)2 Y5N21D0M30N1\",\"额定电压\":\"25V\",\"尺寸\":\"10 × 10.5\",\"制造商\":\"Panasonic Industry Co., Ltd.\",\"容量\":\"330 µF\",\"类别\":\"FIXED ALUMINUM ELECTROLYTIC CAPACITOR\"},\"KvCount\":15},\"SubImageId\":0}],\"Width\":1366},\"Message\":null,\"RequestId\":\"0E562617-1ABF-51C3-92CA-20A5EF6A8F9A\"}}",
+  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Fri, 08 May 2026 02:31:43 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"BF9CE091-7EA4-5FC6-AADD-2364E0A83F71\",\"x-acs-trace-id\":\"c71d216dd6da461215402f1f23ba2342\",\"etag\":\"56jDe70sHQhP/TF7VQ67o1A7\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":1024,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":1,\"KvInfo\":{\"Data\":{\"产地\":\"MADE IN JAPAN\",\"品牌\":\"Panasonic\",\"额定容量数值\":\"5.00\",\"序列号\":\"Y5N21DOM30N1\",\"型号\":\"EEHZE1E331V\",\"批次号\":\"022\",\"数量\":\"500 pcs.\",\"生产日期\":\"2025 11 23\",\"标准\":\"EIAJC-3\",\"额定电压\":\"25V\",\"尺寸\":\"10 × 10.5\",\"产品编号\":\"108010\",\"代码标识\":\"(3N)2 Y5N21D0M30N1\",\"制造商\":\"Panasonic Industry Co., Ltd.\",\"容量\":\"330 µF\",\"类别\":\"FIXED ALUMINUM ELECTROLYTIC CAPACITOR\"},\"KvCount\":16},\"SubImageId\":0}],\"Width\":1366},\"Message\":null,\"RequestId\":\"BF9CE091-7EA4-5FC6-AADD-2364E0A83F71\"}}",
   "CorrectionNotes": [
-    "LotNo 被条码纠正: 022 -> Y5N21D0M30N1"
+    "LotNo 被条码纠正: 022 -> Y5N21D0M30N1",
+    "PartNumber 被条码纠正: 108010 -> EEHZE1E331V"
   ],
   "AppliedPreprocessing": [
     "threshold-128"
   ],
+  "AiDebug": null,
   "Error": null
 }

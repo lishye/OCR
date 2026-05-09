@@ -84,11 +84,11 @@ internal sealed class MainForm : Form
         AddRow(top, 0, "输入目录", _inputBox, options.InputDirectory, "输出目录", _outputBox, options.OutputDirectory);
 
         _providerBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        _providerBox.Items.AddRange(new object[] { "Aliyun", "Windows", "Paddle", "EasyOcr" });
+        _providerBox.Items.AddRange(new object[] { "Aliyun", "Windows", "Paddle" });
         _providerBox.SelectedItem = options.Provider.ToString();
 
         _aiProviderBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        _aiProviderBox.Items.AddRange(new object[] { "ollama", "bailian", "mock" });
+        _aiProviderBox.Items.AddRange(new object[] { "ollama", "openvino", "bailian", "mock" });
         var configuredAiProvider = (ConfigurationManager.AppSettings["AiProvider"] ?? "ollama").Trim();
         var matchedAiProvider = _aiProviderBox.Items.Cast<object>()
             .Select(x => x?.ToString() ?? string.Empty)
@@ -211,14 +211,14 @@ internal sealed class MainForm : Form
         filter.Controls.Add(new Label { Text = "OCR Provider", Width = 90, TextAlign = ContentAlignment.MiddleLeft });
         _queryProviderBox.Width = 110;
         _queryProviderBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        _queryProviderBox.Items.AddRange(new object[] { "All", "Aliyun", "Windows", "Paddle", "EasyOcr" });
+        _queryProviderBox.Items.AddRange(new object[] { "All", "Aliyun", "Windows", "Paddle" });
         _queryProviderBox.SelectedIndex = 0;
         filter.Controls.Add(_queryProviderBox);
 
         filter.Controls.Add(new Label { Text = "AI Provider", Width = 80, TextAlign = ContentAlignment.MiddleLeft });
         _queryAiProviderBox.Width = 110;
         _queryAiProviderBox.DropDownStyle = ComboBoxStyle.DropDownList;
-        _queryAiProviderBox.Items.AddRange(new object[] { "All", "ollama", "bailian", "mock", "None" });
+        _queryAiProviderBox.Items.AddRange(new object[] { "All", "ollama", "openvino", "bailian", "mock", "None" });
         _queryAiProviderBox.SelectedIndex = 0;
         filter.Controls.Add(_queryAiProviderBox);
 
@@ -378,7 +378,7 @@ internal sealed class MainForm : Form
         var selectedAiProvider = _aiProviderBox.SelectedItem?.ToString() ?? "ollama";
         if (string.Equals(selectedAiProvider, "bailian", StringComparison.OrdinalIgnoreCase))
         {
-            var bailianApiKey = ConfigurationManager.AppSettings["BailianApiKey"];
+            var bailianApiKey = SettingHelper.GetSettingOrEnv("BailianApiKey", "OCR_BAILIAN_API_KEY") ?? string.Empty;
             if (string.IsNullOrWhiteSpace(bailianApiKey))
             {
                 MessageBox.Show(
@@ -481,7 +481,7 @@ internal sealed class MainForm : Form
 
     private void LoadTemplateNames(string? selectName = null)
     {
-        var names = new List<string> { "Aliyun", "Windows", "Paddle", "EasyOcr" };
+        var names = new List<string> { "Aliyun", "Windows", "Paddle" };
         _templateBox.Items.Clear();
         foreach (var name in names) _templateBox.Items.Add(name);
 

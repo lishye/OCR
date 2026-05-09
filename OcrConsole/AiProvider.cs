@@ -16,7 +16,11 @@ internal sealed record AiProviderRequest(
 
 internal sealed record AiFieldCandidate(string? Value, double Confidence, string Evidence);
 
-internal sealed record AiProviderResponse(IReadOnlyDictionary<string, AiFieldCandidate> Candidates, string ProviderName);
+internal sealed record AiProviderResponse(
+    IReadOnlyDictionary<string, AiFieldCandidate> Candidates,
+    string ProviderName,
+    string? Prompt = null,
+    string? RawResponse = null);
 
 internal interface IAiFieldResolver
 {
@@ -25,14 +29,22 @@ internal interface IAiFieldResolver
 
 internal static class AiResolverFactory
 {
+    private static readonly string[] CandidateFieldNames =
+    [
+        "PartNumber",
+        "MPN",
+        "Quantity",
+        "LotNo",
+        "Brand",
+        "PO",
+        "HuId",
+        "Description",
+        "DateCode",
+        "Supplier"
+    ];
+
     public static IAiFieldResolver CreateFromConfig(string? providerOverride = null)
     {
-        var enabled = ParseBool(ConfigurationManager.AppSettings["AiFallbackEnabled"], false);
-        if (!enabled)
-        {
-            return new NoopAiFieldResolver();
-        }
-
         var provider = (providerOverride ?? ConfigurationManager.AppSettings["AiProvider"] ?? "ollama").Trim();
         if (provider.Equals("mock", StringComparison.OrdinalIgnoreCase))
         {
@@ -43,17 +55,44 @@ internal static class AiResolverFactory
         {
             var endpoint = ConfigurationManager.AppSettings["OllamaEndpoint"] ?? "http://127.0.0.1:11434";
             var model = ConfigurationManager.AppSettings["OllamaModel"] ?? "qwen2.5:7b";
-            var timeoutSeconds = ParseInt(ConfigurationManager.AppSettings["OllamaTimeoutSeconds"], 20);
+            var timeoutSeconds = SettingHelper.ParseInt(ConfigurationManager.AppSettings["OllamaTimeoutSeconds"], 45);
+            var keepAlive = ConfigurationManager.AppSettings["OllamaKeepAlive"] ?? "30m";
+            var numPredict = SettingHelper.ParseInt(ConfigurationManager.AppSettings["OllamaNumPredict"], 512);
+            var numCtx = SettingHelper.ParseInt(ConfigurationManager.AppSettings["OllamaNumCtx"], 1024);
+            var numThread = SettingHelper.ParseInt(ConfigurationManager.AppSettings["OllamaNumThread"], 16);
+            var numBatch = SettingHelper.ParseInt(ConfigurationManager.AppSettings["OllamaNumBatch"], 128);
 
-            return new OllamaAiFieldResolver(endpoint, model, TimeSpan.FromSeconds(Math.Max(5, timeoutSeconds)));
+            numPredict = Math.Clamp(numPredict, 16, 1024);
+            numCtx = Math.Clamp(numCtx, 512, 4096);
+            numThread = Math.Clamp(numThread, 1, 64);
+            numBatch = Math.Clamp(numBatch, 16, 1024);
+
+            return new OllamaAiFieldResolver(
+                endpoint,
+                model,
+                TimeSpan.FromSeconds(Math.Max(5, timeoutSeconds)),
+                keepAlive,
+                numPredict,
+                numCtx,
+                numThread,
+                numBatch);
+        }
+
+        if (provider.Equals("openvino", StringComparison.OrdinalIgnoreCase))
+        {
+            var endpoint = ConfigurationManager.AppSettings["OpenVinoEndpoint"] ?? "http://127.0.0.1:8000";
+            var timeoutSeconds = SettingHelper.ParseInt(ConfigurationManager.AppSettings["OpenVinoTimeoutSeconds"], 60);
+            var maxNewTokens = SettingHelper.ParseInt(ConfigurationManager.AppSettings["OpenVinoMaxNewTokens"], 256);
+
+            return new OpenVinoAiFieldResolver(endpoint, TimeSpan.FromSeconds(Math.Max(5, timeoutSeconds)), maxNewTokens);
         }
 
         if (provider.Equals("bailian", StringComparison.OrdinalIgnoreCase))
         {
             var endpoint = ConfigurationManager.AppSettings["BailianEndpoint"] ?? "https://dashscope.aliyuncs.com/compatible-mode/v1";
             var model = ConfigurationManager.AppSettings["BailianModel"] ?? "qwen-plus";
-            var apiKey = ConfigurationManager.AppSettings["BailianApiKey"] ?? string.Empty;
-            var timeoutSeconds = ParseInt(ConfigurationManager.AppSettings["BailianTimeoutSeconds"], 20);
+            var apiKey = SettingHelper.GetSettingOrEnv("BailianApiKey", "OCR_BAILIAN_API_KEY") ?? string.Empty;
+            var timeoutSeconds = SettingHelper.ParseInt(ConfigurationManager.AppSettings["BailianTimeoutSeconds"], 20);
 
             if (string.IsNullOrWhiteSpace(apiKey))
             {
@@ -73,36 +112,302 @@ internal static class AiResolverFactory
         return new NoopAiFieldResolver();
     }
 
-    private static bool ParseBool(string? text, bool defaultValue)
+    internal static string BuildAiPrompt(AiProviderRequest request)
     {
-        if (bool.TryParse(text, out var parsed)) return parsed;
-        return defaultValue;
+        var barcodeText = string.Join(" | ", request.Barcodes.Select(b => b.Value));
+        var aliRawText = request.AliRawStructuredFields is null
+            ? "{}"
+            : JsonSerializer.Serialize(request.AliRawStructuredFields);
+
+        var sb = new StringBuilder();
+        sb.AppendLine("You are an OCR post-processing assistant.");
+        sb.AppendLine("Extract fields from OCR and barcode data.");
+        sb.AppendLine("Return STRICT JSON only. No markdown. Unknown value return null.");
+        sb.AppendLine();
+        sb.AppendLine("Output schema:");
+        sb.AppendLine("{");
+        sb.AppendLine("  \"candidates\": {");
+        sb.AppendLine("    \"PartNumber\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"MPN\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"Quantity\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"LotNo\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"Brand\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"PO\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"HuId\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"Description\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"DateCode\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
+        sb.AppendLine("    \"Supplier\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"}");
+        sb.AppendLine("  }");
+        sb.AppendLine("}");
+        sb.AppendLine();
+        sb.AppendLine("Rules:");
+        sb.AppendLine("- Quantity should be numeric only when possible.");
+        sb.AppendLine("- Confidence range is 0..1.");
+        sb.AppendLine("- Only fill fields you are reasonably sure about.");
+        sb.AppendLine("- Stop immediately after the closing JSON brace. No extra notes.");
+        sb.AppendLine();
+        sb.AppendLine("Barcode values:");
+        sb.AppendLine(barcodeText);
+        sb.AppendLine();
+        sb.AppendLine("Ali structured fields:");
+        sb.AppendLine(aliRawText);
+        sb.AppendLine();
+        if (aliRawText == "{}")
+        {
+            sb.AppendLine("Text content:");
+            sb.AppendLine(request.Text);
+            sb.AppendLine();
+        }
+        //sb.AppendLine("Current fields:");
+        //sb.AppendLine(JsonSerializer.Serialize(request.CurrentFields));
+
+        return sb.ToString();
     }
 
-    private static int ParseInt(string? text, int defaultValue)
+    internal static Dictionary<string, AiFieldCandidate> ParseAiCandidates(string responseText)
     {
-        if (int.TryParse(text, out var parsed)) return parsed;
-        return defaultValue;
-    }
-}
+        var map = new Dictionary<string, AiFieldCandidate>(StringComparer.OrdinalIgnoreCase);
 
-internal sealed class NoopAiFieldResolver : IAiFieldResolver
-{
-    public Task<AiProviderResponse?> ResolveAsync(AiProviderRequest request, CancellationToken cancellationToken = default)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        return Task.FromResult<AiProviderResponse?>(null);
+        if (TryParseCandidatesAsJson(responseText, map))
+        {
+            return map;
+        }
+
+        // Fallback: salvage field-level candidates from partially broken JSON.
+        TryParseCandidatesByFieldRegex(responseText, map);
+        return map;
     }
+
+    internal static string NormalizeModelResponse(string responseText)
+    {
+        var text = (responseText ?? string.Empty).Trim();
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return string.Empty;
+        }
+
+        if (text.StartsWith("```", StringComparison.Ordinal))
+        {
+            var firstLf = text.IndexOf('\n');
+            if (firstLf >= 0)
+            {
+                text = text[(firstLf + 1)..];
+            }
+
+            var fenceEnd = text.LastIndexOf("```", StringComparison.Ordinal);
+            if (fenceEnd >= 0)
+            {
+                text = text[..fenceEnd].Trim();
+            }
+        }
+
+        if (TryExtractFirstCompleteJsonObject(text, out var json))
+        {
+            return json;
+        }
+
+        return text;
+    }
+
+    private static bool TryExtractFirstCompleteJsonObject(string text, out string json)
+    {
+        json = string.Empty;
+        var start = text.IndexOf('{');
+        if (start < 0)
+        {
+            return false;
+        }
+
+        var depth = 0;
+        var inString = false;
+        var escaped = false;
+
+        for (var i = start; i < text.Length; i++)
+        {
+            var ch = text[i];
+
+            if (inString)
+            {
+                if (escaped)
+                {
+                    escaped = false;
+                }
+                else if (ch == '\\')
+                {
+                    escaped = true;
+                }
+                else if (ch == '"')
+                {
+                    inString = false;
+                }
+
+                continue;
+            }
+
+            if (ch == '"')
+            {
+                inString = true;
+                continue;
+            }
+
+            if (ch == '{')
+            {
+                depth++;
+                continue;
+            }
+
+            if (ch == '}')
+            {
+                depth--;
+                if (depth == 0)
+                {
+                    json = text[start..(i + 1)];
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static bool TryParseCandidatesAsJson(string responseText, Dictionary<string, AiFieldCandidate> map)
+    {
+        JsonDocument? doc = null;
+
+        try
+        {
+            doc = JsonDocument.Parse(responseText);
+        }
+        catch
+        {
+            if (!TryExtractFirstCompleteJsonObject(responseText, out var raw))
+            {
+                return false;
+            }
+
+            try
+            {
+                doc = JsonDocument.Parse(raw);
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
+        using (doc)
+        {
+            if (doc is null) return false;
+
+            if (!doc.RootElement.TryGetProperty("candidates", out var candidatesNode) || candidatesNode.ValueKind != JsonValueKind.Object)
+            {
+                return false;
+            }
+
+            foreach (var field in candidatesNode.EnumerateObject())
+            {
+                if (field.Value.ValueKind != JsonValueKind.Object) continue;
+
+                var value = field.Value.TryGetProperty("value", out var valueNode) ? valueNode.GetString() : null;
+                var confidence = field.Value.TryGetProperty("confidence", out var confNode) && confNode.TryGetDouble(out var c) ? c : 0;
+                var evidence = field.Value.TryGetProperty("evidence", out var evNode) ? (evNode.GetString() ?? string.Empty) : string.Empty;
+
+                if (string.IsNullOrWhiteSpace(value)) continue;
+                map[field.Name] = new AiFieldCandidate(value, Math.Clamp(confidence, 0, 1), evidence);
+            }
+        }
+
+        return map.Count > 0;
+    }
+
+    private static void TryParseCandidatesByFieldRegex(string responseText, Dictionary<string, AiFieldCandidate> map)
+    {
+        foreach (var fieldName in CandidateFieldNames)
+        {
+            var fieldPattern = $"\\\"{Regex.Escape(fieldName)}\\\"\\s*:\\s*\\{{(?<obj>.*?)\\}}";
+            var fieldMatch = Regex.Match(responseText, fieldPattern, RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            if (!fieldMatch.Success)
+            {
+                continue;
+            }
+
+            var objText = fieldMatch.Groups["obj"].Value;
+            var valueMatch = Regex.Match(objText, "\\\"value\\\"\\s*:\\s*(\\\"(?<v>(?:\\\\.|[^\\\"])*)\\\"|null)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            if (!valueMatch.Success)
+            {
+                continue;
+            }
+
+            string? value = null;
+            if (valueMatch.Value.IndexOf("null", StringComparison.OrdinalIgnoreCase) < 0)
+            {
+                value = UnescapeJsonString(valueMatch.Groups["v"].Value);
+            }
+
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                continue;
+            }
+
+            var confidence = 0d;
+            var confMatch = Regex.Match(objText, "\\\"confidence\\\"\\s*:\\s*(?<c>-?[0-9]+(?:\\.[0-9]+)?)", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            if (confMatch.Success)
+            {
+                _ = double.TryParse(confMatch.Groups["c"].Value, out confidence);
+            }
+
+            var evidence = string.Empty;
+            var evMatch = Regex.Match(objText, "\\\"evidence\\\"\\s*:\\s*\\\"(?<e>(?:\\\\.|[^\\\"])*)\\\"", RegexOptions.Singleline | RegexOptions.IgnoreCase);
+            if (evMatch.Success)
+            {
+                evidence = UnescapeJsonString(evMatch.Groups["e"].Value);
+            }
+
+            map[fieldName] = new AiFieldCandidate(value, Math.Clamp(confidence, 0, 1), evidence);
+        }
+    }
+
+    private static string UnescapeJsonString(string text)
+    {
+        try
+        {
+            return JsonSerializer.Deserialize<string>($"\"{text}\"") ?? text;
+        }
+        catch
+        {
+            return text.Replace("\\\\\"", "\"").Replace("\\\\", "\\");
+        }
+    }
+
+
 }
 
 internal sealed class OllamaAiFieldResolver : IAiFieldResolver
 {
     private readonly string _model;
     private readonly HttpClient _httpClient;
+    private readonly string _keepAlive;
+    private readonly int _numPredict;
+    private readonly int _numCtx;
+    private readonly int _numThread;
+    private readonly int _numBatch;
 
-    public OllamaAiFieldResolver(string endpoint, string model, TimeSpan timeout)
+    public OllamaAiFieldResolver(
+        string endpoint,
+        string model,
+        TimeSpan timeout,
+        string keepAlive,
+        int numPredict,
+        int numCtx,
+        int numThread,
+        int numBatch)
     {
         _model = model;
+        _keepAlive = string.IsNullOrWhiteSpace(keepAlive) ? "30m" : keepAlive.Trim();
+        _numPredict = numPredict;
+        _numCtx = numCtx;
+        _numThread = numThread;
+        _numBatch = numBatch;
         _httpClient = new HttpClient
         {
             BaseAddress = new Uri(endpoint.TrimEnd('/') + "/"),
@@ -112,7 +417,7 @@ internal sealed class OllamaAiFieldResolver : IAiFieldResolver
 
     public async Task<AiProviderResponse?> ResolveAsync(AiProviderRequest request, CancellationToken cancellationToken = default)
     {
-        var prompt = BuildPrompt(request);
+        var prompt = AiResolverFactory.BuildAiPrompt(request);
 
         var payload = new
         {
@@ -120,8 +425,13 @@ internal sealed class OllamaAiFieldResolver : IAiFieldResolver
             prompt,
             stream = false,
             format = "json",
+            keep_alive = _keepAlive,
             options = new
             {
+                num_predict = _numPredict,
+                num_ctx = _numCtx,
+                num_thread = _numThread,
+                num_batch = _numBatch,
                 temperature = 0.1,
                 top_p = 0.9
             }
@@ -130,7 +440,12 @@ internal sealed class OllamaAiFieldResolver : IAiFieldResolver
         using var response = await _httpClient.PostAsJsonAsync("api/generate", payload, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            return null;
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            return new AiProviderResponse(
+                new Dictionary<string, AiFieldCandidate>(StringComparer.OrdinalIgnoreCase),
+                $"ollama:{_model}",
+                prompt,
+                $"HTTP {(int)response.StatusCode}: {errorBody}");
         }
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -151,115 +466,79 @@ internal sealed class OllamaAiFieldResolver : IAiFieldResolver
             return null;
         }
 
-        var candidates = ParseCandidates(responseText);
-        if (candidates.Count == 0)
+        var normalizedResponseText = AiResolverFactory.NormalizeModelResponse(responseText);
+        var candidates = AiResolverFactory.ParseAiCandidates(normalizedResponseText);
+        return new AiProviderResponse(candidates, $"ollama:{_model}", prompt, normalizedResponseText);
+    }
+}
+
+internal sealed class OpenVinoAiFieldResolver : IAiFieldResolver
+{
+    private readonly HttpClient _httpClient;
+    private readonly int _maxNewTokens;
+
+    public OpenVinoAiFieldResolver(string endpoint, TimeSpan timeout, int maxNewTokens)
+    {
+        _maxNewTokens = maxNewTokens;
+        _httpClient = new HttpClient
+        {
+            BaseAddress = new Uri(endpoint.TrimEnd('/') + "/"),
+            Timeout = timeout
+        };
+    }
+
+    public async Task<AiProviderResponse?> ResolveAsync(AiProviderRequest request, CancellationToken cancellationToken = default)
+    {
+        var prompt = AiResolverFactory.BuildAiPrompt(request);
+
+        var payload = new
+        {
+            prompt,
+            max_new_tokens = _maxNewTokens,
+            temperature = 0.1
+        };
+
+        using var response = await _httpClient.PostAsJsonAsync("ai/generate", payload, cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            return new AiProviderResponse(
+                new Dictionary<string, AiFieldCandidate>(StringComparer.OrdinalIgnoreCase),
+                "openvino",
+                prompt,
+                $"HTTP {(int)response.StatusCode}: {errorBody}");
+        }
+
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (string.IsNullOrWhiteSpace(body))
         {
             return null;
         }
 
-        return new AiProviderResponse(candidates, $"ollama:{_model}");
+        using var rootDoc = JsonDocument.Parse(body);
+        if (!rootDoc.RootElement.TryGetProperty("response", out var responseNode))
+        {
+            return null;
+        }
+
+        var responseText = responseNode.GetString();
+        if (string.IsNullOrWhiteSpace(responseText))
+        {
+            return null;
+        }
+
+        var normalizedResponseText = AiResolverFactory.NormalizeModelResponse(responseText);
+        var candidates = AiResolverFactory.ParseAiCandidates(normalizedResponseText);
+        return new AiProviderResponse(candidates, "openvino", prompt, normalizedResponseText);
     }
+}
 
-    private static string BuildPrompt(AiProviderRequest request)
+internal sealed class NoopAiFieldResolver : IAiFieldResolver
+{
+    public Task<AiProviderResponse?> ResolveAsync(AiProviderRequest request, CancellationToken cancellationToken = default)
     {
-        var barcodeText = string.Join(" | ", request.Barcodes.Select(b => b.Value));
-        var aliRawText = request.AliRawStructuredFields is null
-            ? "{}"
-            : JsonSerializer.Serialize(request.AliRawStructuredFields);
-
-                var sb = new StringBuilder();
-                sb.AppendLine("You are an OCR post-processing assistant.");
-                sb.AppendLine("Extract fields from OCR and barcode data.");
-                sb.AppendLine("Return STRICT JSON only. No markdown.");
-                sb.AppendLine();
-                sb.AppendLine("Output schema:");
-                sb.AppendLine("{");
-                sb.AppendLine("  \"candidates\": {");
-                sb.AppendLine("    \"PartNumber\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-                sb.AppendLine("    \"MPN\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-                sb.AppendLine("    \"Quantity\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-                sb.AppendLine("    \"LotNo\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-                sb.AppendLine("    \"Brand\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-                sb.AppendLine("    \"PO\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-                sb.AppendLine("    \"HuId\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"}");
-                sb.AppendLine("  }");
-                sb.AppendLine("}");
-                sb.AppendLine();
-                sb.AppendLine("Rules:");
-                sb.AppendLine("- Quantity should be numeric only when possible.");
-                sb.AppendLine("- Confidence range is 0..1.");
-                sb.AppendLine("- Only fill fields you are reasonably sure about.");
-                sb.AppendLine();
-                sb.AppendLine("OCR text:");
-                sb.AppendLine(request.Text);
-                sb.AppendLine();
-                sb.AppendLine("Barcode values:");
-                sb.AppendLine(barcodeText);
-                sb.AppendLine();
-                sb.AppendLine("Ali structured fields:");
-                sb.AppendLine(aliRawText);
-                sb.AppendLine();
-                sb.AppendLine("Current fields:");
-                sb.AppendLine(JsonSerializer.Serialize(request.CurrentFields));
-
-                return sb.ToString();
-    }
-
-    private static Dictionary<string, AiFieldCandidate> ParseCandidates(string responseText)
-    {
-        var map = new Dictionary<string, AiFieldCandidate>(StringComparer.OrdinalIgnoreCase);
-
-        JsonDocument? doc = null;
-        try
-        {
-            doc = JsonDocument.Parse(responseText);
-        }
-        catch
-        {
-            var trimmed = responseText.Trim();
-            var start = trimmed.IndexOf('{');
-            var end = trimmed.LastIndexOf('}');
-            if (start >= 0 && end > start)
-            {
-                var raw = trimmed[start..(end + 1)];
-                try
-                {
-                    doc = JsonDocument.Parse(raw);
-                }
-                catch
-                {
-                    return map;
-                }
-            }
-            else
-            {
-                return map;
-            }
-        }
-
-        using (doc)
-        {
-            if (doc is null) return map;
-
-            if (!doc.RootElement.TryGetProperty("candidates", out var candidatesNode) || candidatesNode.ValueKind != JsonValueKind.Object)
-            {
-                return map;
-            }
-
-            foreach (var field in candidatesNode.EnumerateObject())
-            {
-                if (field.Value.ValueKind != JsonValueKind.Object) continue;
-
-                var value = field.Value.TryGetProperty("value", out var valueNode) ? valueNode.GetString() : null;
-                var confidence = field.Value.TryGetProperty("confidence", out var confNode) && confNode.TryGetDouble(out var c) ? c : 0;
-                var evidence = field.Value.TryGetProperty("evidence", out var evNode) ? (evNode.GetString() ?? string.Empty) : string.Empty;
-
-                if (string.IsNullOrWhiteSpace(value)) continue;
-                map[field.Name] = new AiFieldCandidate(value, Math.Clamp(confidence, 0, 1), evidence);
-            }
-        }
-
-        return map;
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<AiProviderResponse?>(null);
     }
 }
 
@@ -281,7 +560,7 @@ internal sealed class BailianAiFieldResolver : IAiFieldResolver
 
     public async Task<AiProviderResponse?> ResolveAsync(AiProviderRequest request, CancellationToken cancellationToken = default)
     {
-        var prompt = BuildPrompt(request);
+        var prompt = AiResolverFactory.BuildAiPrompt(request);
         var payload = new
         {
             model = _model,
@@ -297,7 +576,12 @@ internal sealed class BailianAiFieldResolver : IAiFieldResolver
         using var response = await _httpClient.PostAsJsonAsync("chat/completions", payload, cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
-            return null;
+            var errorBody = await response.Content.ReadAsStringAsync(cancellationToken);
+            return new AiProviderResponse(
+                new Dictionary<string, AiFieldCandidate>(StringComparer.OrdinalIgnoreCase),
+                $"bailian:{_model}",
+                prompt,
+                $"HTTP {(int)response.StatusCode}: {errorBody}");
         }
 
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
@@ -330,115 +614,9 @@ internal sealed class BailianAiFieldResolver : IAiFieldResolver
             return null;
         }
 
-        var candidates = ParseCandidates(responseText);
-        if (candidates.Count == 0)
-        {
-            return null;
-        }
-
-        return new AiProviderResponse(candidates, $"bailian:{_model}");
-    }
-
-    private static string BuildPrompt(AiProviderRequest request)
-    {
-        var barcodeText = string.Join(" | ", request.Barcodes.Select(b => b.Value));
-        var aliRawText = request.AliRawStructuredFields is null
-            ? "{}"
-            : JsonSerializer.Serialize(request.AliRawStructuredFields);
-
-        var sb = new StringBuilder();
-        sb.AppendLine("You are an OCR post-processing assistant.");
-        sb.AppendLine("Extract fields from OCR and barcode data.");
-        sb.AppendLine("Return STRICT JSON only. No markdown.");
-        sb.AppendLine();
-        sb.AppendLine("Output schema:");
-        sb.AppendLine("{");
-        sb.AppendLine("  \"candidates\": {");
-        sb.AppendLine("    \"PartNumber\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"MPN\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"Quantity\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"LotNo\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"Brand\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"PO\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},");
-        sb.AppendLine("    \"HuId\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"}");
-        sb.AppendLine("  }");
-        sb.AppendLine("}");
-        sb.AppendLine();
-        sb.AppendLine("Rules:");
-        sb.AppendLine("- Quantity should be numeric only when possible.");
-        sb.AppendLine("- Confidence range is 0..1.");
-        sb.AppendLine("- Only fill fields you are reasonably sure about.");
-        sb.AppendLine();
-        sb.AppendLine("OCR text:");
-        sb.AppendLine(request.Text);
-        sb.AppendLine();
-        sb.AppendLine("Barcode values:");
-        sb.AppendLine(barcodeText);
-        sb.AppendLine();
-        sb.AppendLine("Ali structured fields:");
-        sb.AppendLine(aliRawText);
-        sb.AppendLine();
-        sb.AppendLine("Current fields:");
-        sb.AppendLine(JsonSerializer.Serialize(request.CurrentFields));
-
-        return sb.ToString();
-    }
-
-    private static Dictionary<string, AiFieldCandidate> ParseCandidates(string responseText)
-    {
-        var map = new Dictionary<string, AiFieldCandidate>(StringComparer.OrdinalIgnoreCase);
-
-        JsonDocument? doc = null;
-        try
-        {
-            doc = JsonDocument.Parse(responseText);
-        }
-        catch
-        {
-            var trimmed = responseText.Trim();
-            var start = trimmed.IndexOf('{');
-            var end = trimmed.LastIndexOf('}');
-            if (start >= 0 && end > start)
-            {
-                var raw = trimmed[start..(end + 1)];
-                try
-                {
-                    doc = JsonDocument.Parse(raw);
-                }
-                catch
-                {
-                    return map;
-                }
-            }
-            else
-            {
-                return map;
-            }
-        }
-
-        using (doc)
-        {
-            if (doc is null) return map;
-
-            if (!doc.RootElement.TryGetProperty("candidates", out var candidatesNode) || candidatesNode.ValueKind != JsonValueKind.Object)
-            {
-                return map;
-            }
-
-            foreach (var field in candidatesNode.EnumerateObject())
-            {
-                if (field.Value.ValueKind != JsonValueKind.Object) continue;
-
-                var value = field.Value.TryGetProperty("value", out var valueNode) ? valueNode.GetString() : null;
-                var confidence = field.Value.TryGetProperty("confidence", out var confNode) && confNode.TryGetDouble(out var c) ? c : 0;
-                var evidence = field.Value.TryGetProperty("evidence", out var evNode) ? (evNode.GetString() ?? string.Empty) : string.Empty;
-
-                if (string.IsNullOrWhiteSpace(value)) continue;
-                map[field.Name] = new AiFieldCandidate(value, Math.Clamp(confidence, 0, 1), evidence);
-            }
-        }
-
-        return map;
+        var normalizedResponseText = AiResolverFactory.NormalizeModelResponse(responseText);
+        var candidates = AiResolverFactory.ParseAiCandidates(normalizedResponseText);
+        return new AiProviderResponse(candidates, $"bailian:{_model}", prompt, normalizedResponseText);
     }
 }
 
@@ -516,6 +694,6 @@ internal sealed class MockAiFieldResolver : IAiFieldResolver
             return Task.FromResult<AiProviderResponse?>(null);
         }
 
-        return Task.FromResult<AiProviderResponse?>(new AiProviderResponse(map, "mock-ai-v1"));
+        return Task.FromResult<AiProviderResponse?>(new AiProviderResponse(map, "mock-ai-v1", null, JsonSerializer.Serialize(map)));
     }
 }

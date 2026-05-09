@@ -23,6 +23,11 @@ internal sealed record ExtractedFields(
     string? PO,
     string? HuId);
 
+internal sealed record AiDebugInfo(
+    string Provider,
+    string? Prompt,
+    string? RawResponse);
+
 internal sealed record ImageRecognitionResult(
     string FileName,
     string FilePath,
@@ -37,6 +42,7 @@ internal sealed record ImageRecognitionResult(
     string? AliRawStructuredJson,
     IReadOnlyList<string> CorrectionNotes,
     IReadOnlyList<string> AppliedPreprocessing,
+    AiDebugInfo? AiDebug,
     string? Error);
 
 internal sealed record ImageVariant(string Name, System.Drawing.Bitmap Bitmap);
@@ -65,7 +71,6 @@ internal sealed record AppOptions(
     string? AccessKeyId,
     string? AccessKeySecret,
     string AliEndpoint,
-    string EasyOcrEndpoint,
     string PaddleEndpoint,
     int LocalOcrTimeoutSeconds,
     string LocalDbConnectionString,
@@ -86,7 +91,6 @@ internal sealed record AppOptions(
 
         var templateName = args.Get("template") ?? ConfigurationManager.AppSettings["OcrTemplateName"] ?? provider.ToString();
         var localCompatEndpoint = args.Get("local-ocr-endpoint") ?? ConfigurationManager.AppSettings["LocalOcrEndpoint"];
-        var easyOcrEndpoint = args.Get("easy-ocr-endpoint") ?? ConfigurationManager.AppSettings["EasyOcrEndpoint"] ?? localCompatEndpoint ?? "http://127.0.0.1:8000";
         var paddleEndpoint = args.Get("paddle-endpoint") ?? ConfigurationManager.AppSettings["PaddleEndpoint"] ?? localCompatEndpoint ?? "http://127.0.0.1:8001";
 
         var configuredRulesJson = ConfigurationManager.AppSettings["FieldRulesJson"];
@@ -97,22 +101,16 @@ internal sealed record AppOptions(
             OutputDirectory: output,
             Provider: provider,
             LanguageTag: language,
-            AccessKeyId: args.Get("ak") ?? ConfigurationManager.AppSettings["AccessKeyID"],
-            AccessKeySecret: args.Get("sk") ?? ConfigurationManager.AppSettings["AccessKeySecret"],
+            AccessKeyId: args.Get("ak") ?? SettingHelper.GetSettingOrEnv("AccessKeyID", "OCR_ALI_ACCESS_KEY_ID"),
+            AccessKeySecret: args.Get("sk") ?? SettingHelper.GetSettingOrEnv("AccessKeySecret", "OCR_ALI_ACCESS_KEY_SECRET"),
             AliEndpoint: args.Get("endpoint") ?? ConfigurationManager.AppSettings["AliOcrEndpoint"] ?? "ocr-api.cn-hangzhou.aliyuncs.com",
-            EasyOcrEndpoint: easyOcrEndpoint,
             PaddleEndpoint: paddleEndpoint,
-            LocalOcrTimeoutSeconds: ParseInt(args.Get("local-ocr-timeout") ?? ConfigurationManager.AppSettings["LocalOcrTimeoutSeconds"], 300),
+            LocalOcrTimeoutSeconds: SettingHelper.ParseInt(args.Get("local-ocr-timeout") ?? ConfigurationManager.AppSettings["LocalOcrTimeoutSeconds"], 300),
             LocalDbConnectionString: localDbConnectionString,
             TemplateName: templateName,
             FieldRules: configuredRules.Count == 0 ? TemplateFactory.Aliyun() : configuredRules);
     }
 
-    private static int ParseInt(string? text, int defaultValue)
-    {
-        if (int.TryParse(text, out var parsed)) return parsed;
-        return defaultValue;
-    }
 
     private static OcrProvider ParseProvider(string? providerText)
     {
@@ -120,8 +118,6 @@ internal sealed record AppOptions(
 
         // Backward-compatible aliases for historical config values.
         if (string.Equals(providerText, "LocalPaddle", StringComparison.OrdinalIgnoreCase)) return OcrProvider.Paddle;
-        if (string.Equals(providerText, "EasyOCR", StringComparison.OrdinalIgnoreCase)) return OcrProvider.EasyOcr;
-
         return Enum.TryParse<OcrProvider>(providerText, true, out var parsedProvider)
             ? parsedProvider
             : OcrProvider.Aliyun;
@@ -187,6 +183,5 @@ internal enum OcrProvider
 {
     Aliyun,
     Windows,
-    Paddle,
-    EasyOcr
+    Paddle
 }

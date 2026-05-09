@@ -122,7 +122,6 @@ IF COL_LENGTH('dbo.OcrResultFields', 'FieldValue') IS NOT NULL ALTER TABLE dbo.O
         InsertTemplateIfMissing("Aliyun", TemplateFactory.Aliyun());
         InsertTemplateIfMissing("Windows", TemplateFactory.Windows());
         InsertTemplateIfMissing("Paddle", TemplateFactory.Windows());
-        InsertTemplateIfMissing("EasyOcr", TemplateFactory.Windows());
     }
 
     public void UpsertTemplate(string name, IReadOnlyList<FieldRule> rules)

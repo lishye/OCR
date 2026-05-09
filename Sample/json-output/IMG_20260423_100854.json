@@ -3,7 +3,7 @@
   "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100854.jpg",
   "RelativePath": "IMG_20260423_100854.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100854.json",
-  "OcrProvider": "Paddle",
+  "OcrProvider": "Aliyun",
   "AiProvider": "ollama",
   "Barcodes": [
     {
@@ -47,31 +47,51 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "福 CUST P/NKEMC0805C334K5RACAUTO ROHS-PRC CUSTP.0.#3401358961 MEXICO 1 ■ 7 O O 261270415 ID SPL490D 1 04476771 水 KEMET P/NC0805C334K5RACAUT0 KEMET 31433 a YAGEO compan",
+  "Text": "KEMET: RoHS-PRC: QUANTITY: 4000 PAHHCVI3: CUSTP.O、#: 33401358961 SPL: 490D MEXICO: 米: 04476771 KEMETP/N: C0805C334K5RACAUTO 31433: aYAGEOcompany: D/C: 2612 CUSTP/N: KEMC0805C334K5RACAUTO ID: 261270415",
   "Fields": {
     "PartNumber": "KEMC0805C334K5RACAUTO",
     "Description": "",
     "Quantity": "4000",
     "DateCode": "2026-03-16",
-    "LotNo": "",
+    "LotNo": "261270415",
     "Supplier": "",
-    "Brand": "KEMET",
+    "Brand": "",
     "MPN": "KEMC0805C334K5RACAUTO",
     "PO": "3401358961",
     "HuId": "261270415"
   },
-  "AliRawStructuredFields": {},
-  "AliRawStructuredJson": "{\"text\":\"福 CUST P/NKEMC0805C334K5RACAUTO ROHS-PRC CUSTP.0.#3401358961 MEXICO 1 ■ 7 O O 261270415 ID SPL490D 1 04476771 水 KEMET P/NC0805C334K5RACAUT0 KEMET 31433 a YAGEO compan\",\"fields\":{},\"lines\":[\"福\",\"CUST P/NKEMC0805C334K5RACAUTO\",\"ROHS-PRC\",\"CUSTP.0.#3401358961\",\"MEXICO\",\"1\",\"■\",\"7\",\"O\",\"O\",\"261270415\",\"ID\",\"SPL490D\",\"1\",\"04476771\",\"水\",\"KEMET P/NC0805C334K5RACAUT0\",\"KEMET\",\"31433\",\"a YAGEO compan\"],\"rotation\":0}",
+  "AliRawStructuredFields": {
+    "KEMET": "",
+    "RoHS-PRC": "",
+    "QUANTITY": "4000",
+    "PAHHCVI3": "",
+    "CUSTP.O、#": "33401358961",
+    "SPL": "490D",
+    "MEXICO": "",
+    "米": "04476771",
+    "KEMETP/N": "C0805C334K5RACAUTO",
+    "31433": "",
+    "aYAGEOcompany": "",
+    "D/C": "2612",
+    "CUSTP/N": "KEMC0805C334K5RACAUTO",
+    "ID": "261270415"
+  },
+  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Fri, 08 May 2026 01:39:24 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"60C0E0BA-B002-5A5E-8D8D-0B953A22E3EC\",\"x-acs-trace-id\":\"c884e4049f0c203461f8b4fa3c4f0298\",\"etag\":\"4PI+EjNQBLK9j0lnH5IlYbw1\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":3072,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":359,\"KvInfo\":{\"Data\":{\"KEMET\":\"\",\"RoHS-PRC\":\"\",\"QUANTITY\":\"4000\",\"PAHHCVI3\":\"\",\"CUSTP.O、#\":\"33401358961\",\"SPL\":\"490D\",\"MEXICO\":\"\",\"米\":\"04476771\",\"KEMETP/N\":\"C0805C334K5RACAUTO\",\"31433\":\"\",\"aYAGEOcompany\":\"\",\"D/C\":\"2612\",\"CUSTP/N\":\"KEMC0805C334K5RACAUTO\",\"ID\":\"261270415\"},\"KvCount\":14},\"SubImageId\":0}],\"Width\":4096},\"Message\":null,\"RequestId\":\"60C0E0BA-B002-5A5E-8D8D-0B953A22E3EC\"}}",
   "CorrectionNotes": [
+    "PartNumber 由条码补全: KEMC0805C334K5RACAUTO",
     "PO 由条码补全: 3401358961",
-    "HuId 被条码纠正: SPL490D -> 261270415",
-    "Quantity 由条码补全: 4000",
-    "DateCode 由条码补全: 2026-03-16"
+    "HuId 由条码补全: 261270415",
+    "AI兜底: 未产出可用候选"
   ],
   "AppliedPreprocessing": [
     "barcode-downscale-2000px",
     "threshold-128",
     "ocr-downscale-1500px"
   ],
+  "AiDebug": {
+    "Provider": "ollama:qwen2.5:7b",
+    "Prompt": "You are an OCR post-processing assistant.\r\nExtract fields from OCR and barcode data.\r\nReturn STRICT JSON only. No markdown. Unknown value return null.\r\n\r\nOutput schema:\r\n{\r\n  \"candidates\": {\r\n    \"PartNumber\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"MPN\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Quantity\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"LotNo\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Brand\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"PO\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"HuId\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"}\r\n  }\r\n}\r\n\r\nRules:\r\n- Quantity should be numeric only when possible.\r\n- Confidence range is 0..1.\r\n- Only fill fields you are reasonably sure about.\r\n\r\nBarcode values:\r\n3401358961 | KEMC0805C334K5RACAUTO | 2612 | 04476771 | 02186146 | 06238988 | 261270415 | 4000\r\n\r\nAli structured fields:\r\nQuantity: 4000\nCUSTP.O、#: 33401358961\nSPL: 490D\n米: 04476771\nKEMETP/N: C0805C334K5RACAUTO\nD/C: 2612\nCUSTP/N: KEMC0805C334K5RACAUTO\nID: 261270415\r\n\r\nCurrent fields:\r\n{\"PartNumber\":\"KEMC0805C334K5RACAUTO\",\"Description\":\"\",\"Quantity\":\"4000\",\"DateCode\":\"2026-03-16\",\"LotNo\":\"261270415\",\"Supplier\":\"\",\"Brand\":\"\",\"MPN\":\"KEMC0805C334K5RACAUTO\",\"PO\":\"3401358961\",\"HuId\":\"261270415\"}\r\n",
+    "RawResponse": "{\n  \"candidates\": {\n    \"PartNumber\": {\"value\":\"KEMC0805C334K5RACAUTO\",\"confidence\":0.9,\"evidence\":\"OCR and Barcode\"},\n    \"MPN\": {\"value\":\"KEMC0805C334K"
+  },
   "Error": null
 }

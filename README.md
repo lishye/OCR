@@ -83,22 +83,35 @@ dotnet run -- "D:\images" "D:\output" "zh-Hans"
 - 结构化字段提取基于 OCR 文本和条码内容的规则匹配，适合标签类图片，但不是通用文档解析器
 - 单张图片识别失败时，不会中断整个批处理，错误会记录在对应图片的 error 字段中
 
-## 本地离线 OCR（EasyOCR + FastAPI）
+## 密钥配置（.env 风格）
 
-本项目支持新增本地 OCR Provider：`LocalPaddle`。
-当前 `local-ocr-service` 默认实现基于 EasyOCR。
+项目支持在仓库根目录使用 `.env` / `.env.local`（程序启动时自动加载），用于本地密钥配置，推荐方式：
+
+```dotenv
+OCR_ALI_ACCESS_KEY_ID=your_aliyun_ak
+OCR_ALI_ACCESS_KEY_SECRET=your_aliyun_sk
+OCR_BAILIAN_API_KEY=your_bailian_api_key
+```
+
+说明：
+
+- 优先级：系统环境变量 > `.env.local` > `.env` > `App.config`
+- `.env` 和 `.env.local` 已被 `.gitignore` 忽略，不会提交到仓库
+- 可复制仓库根目录 `.env.example` 作为模板
+
+## 本地离线 AI（OpenVINO GenAI + FastAPI）
+
+`local-service` 使用 OpenVINO GenAI 驱动本地 LLM（Qwen2.5 INT4），提供 AI 字段推理接口。
 
 ### 服务接口约定
 
-- `POST /ocr`，`multipart/form-data`，字段名：`file`
+- `POST /ai/generate`，`application/json`
+- 请求：`{ "prompt": "...", "max_new_tokens": 256, "temperature": 0.1 }`
 - 返回 JSON：
 
 ```json
 {
-  "text": "full ocr text",
-  "fields": {},
-  "lines": ["line1", "line2"],
-  "raw": []
+  "response": "{ \"candidates\": { ... } }"
 }
 ```
 
@@ -107,18 +120,13 @@ dotnet run -- "D:\images" "D:\output" "zh-Hans"
 ### 本地服务启动
 
 ```powershell
-cd local-ocr-service
+cd local-service
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
 uvicorn app:app --host 127.0.0.1 --port 8000
 ```
 
-如果首次安装后提示 `easyocr` / `torch` 相关错误，可先安装 CPU 版本 PyTorch：
-
-```powershell
-.\.venv\Scripts\pip.exe install torch torchvision --index-url https://download.pytorch.org/whl/cpu
-```
 
 ### C# 配置项（`OcrConsole/App.config`）
 

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Configuration;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -25,6 +26,7 @@ internal sealed class OcrProcessor
     private readonly LocalDbStore _store;
     private readonly IAiFieldResolver _aiResolver;
     private readonly string? _aiProvider;
+    private readonly bool _aiDebugLogEnabled;
     private static readonly JsonSerializerOptions RawAliJsonOptions = new()
     {
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
@@ -36,6 +38,7 @@ internal sealed class OcrProcessor
         _store = store;
         _aiResolver = aiResolver ?? AiResolverFactory.CreateFromConfig();
         _aiProvider = string.IsNullOrWhiteSpace(aiProvider) ? null : aiProvider;
+        _aiDebugLogEnabled = ParseBool(ConfigurationManager.AppSettings["AiDebugLogEnabled"], Debugger.IsAttached);
     }
 
     public async Task ProcessAsync(AppOptions options, IProgress<string>? progress = null, ProcessingControl? control = null, CancellationToken cancellationToken = default)
@@ -139,7 +142,8 @@ internal sealed class OcrProcessor
                 {
                     sw.Restart();
                 }
-                var finalized = await ApplyAiProviderAsync(ocr, barcodes, corrected, mergedNotes, cancellationToken);
+                var aiApply = await ApplyAiProviderAsync(ocr, barcodes, corrected, mergedNotes, cancellationToken);
+                var finalized = aiApply.Fields;
                 if (shouldUseAiProvider)
                 {
                     progress?.Report($"  AI补全: {sw.ElapsedMilliseconds}ms");
@@ -159,6 +163,7 @@ internal sealed class OcrProcessor
                     AliRawStructuredJson: ocr.AliRawStructuredJson,
                     CorrectionNotes: mergedNotes,
                     AppliedPreprocessing: processedImage.AppliedSteps,
+                    AiDebug: aiApply.Debug,
                     Error: null);
 
                 var resultJson = JsonSerializer.Serialize(result, jsonOptions);
@@ -181,6 +186,7 @@ internal sealed class OcrProcessor
                     AliRawStructuredJson: null,
                     CorrectionNotes: [],
                     AppliedPreprocessing: [],
+                    AiDebug: null,
                     Error: ex.Message);
 
                 var errorJson = JsonSerializer.Serialize(errorResult, jsonOptions);
@@ -192,14 +198,14 @@ internal sealed class OcrProcessor
         progress?.Report($"识别完成，结果已写入目录: {outputDirectory}");
     }
 
-    private async Task<ExtractedFields> ApplyAiProviderAsync(
+    private async Task<AiApplyResult> ApplyAiProviderAsync(
         OcrReadResult ocr,
         IReadOnlyList<BarcodeResult> barcodes,
         ExtractedFields current,
         List<string> notes,
         CancellationToken cancellationToken)
     {
-        if (!ShouldUseAiProvider(current)) return current;
+        if (!ShouldUseAiProvider(current)) return new AiApplyResult(current, null);
 
         var response = await _aiResolver.ResolveAsync(
             new AiProviderRequest(
@@ -209,10 +215,12 @@ internal sealed class OcrProcessor
                 CurrentFields: current),
             cancellationToken);
 
+        var debug = BuildAiDebugInfo(response);
+
         if (response is null || response.Candidates.Count == 0)
         {
             notes.Add("AI兜底: 未产出可用候选");
-            return current;
+            return new AiApplyResult(current, debug);
         }
 
         var updated = current;
@@ -222,8 +230,22 @@ internal sealed class OcrProcessor
             updated = SetFieldIfEmptyOrLowConfidence(updated, kv.Key, kv.Value.Value!, notes, kv.Value, response.ProviderName);
         }
 
-        return updated;
+        return new AiApplyResult(updated, debug);
     }
+
+    private AiDebugInfo? BuildAiDebugInfo(AiProviderResponse? response)
+    {
+        if (!_aiDebugLogEnabled || response is null) return null;
+        return new AiDebugInfo(response.ProviderName, response.Prompt, response.RawResponse);
+    }
+
+    private static bool ParseBool(string? text, bool defaultValue)
+    {
+        if (bool.TryParse(text, out var parsed)) return parsed;
+        return defaultValue;
+    }
+
+    private sealed record AiApplyResult(ExtractedFields Fields, AiDebugInfo? Debug);
 
     private static bool ShouldUseAiProvider(ExtractedFields fields)
     {
@@ -291,7 +313,6 @@ internal sealed class OcrProcessor
             OcrProvider.Windows => await ReadWindowsTextAsync(image, options.LanguageTag),
             OcrProvider.Aliyun when aliClient is not null => await ReadAliTextAsync(imagePath, aliClient),
             OcrProvider.Paddle => await ReadLocalHttpOcrTextAsync(imagePath, options.PaddleEndpoint, options.LocalOcrTimeoutSeconds),
-            OcrProvider.EasyOcr => await ReadLocalHttpOcrTextAsync(imagePath, options.EasyOcrEndpoint, options.LocalOcrTimeoutSeconds),
             _ => throw new InvalidOperationException("OCR 配置无效。")
         };
     }

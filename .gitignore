@@ -27,3 +27,6 @@ dist-ssr
 bin
 obj
 __pycache__
+.env
+.env.*
+!.env.example

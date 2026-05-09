@@ -4,7 +4,7 @@
   "RelativePath": "IMG_20260423_094206.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_094206.json",
   "OcrProvider": "Aliyun",
-  "AiProvider": "bailian",
+  "AiProvider": "ollama",
   "Barcodes": [
     {
       "Format": "QR_CODE",
@@ -35,7 +35,7 @@
     "Supplier": "上海英恒电子有限公司",
     "PN": "G051002139100999"
   },
-  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Thu, 07 May 2026 07:05:22 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"6243C43F-698A-5998-82B9-D5E80CA8DC6B\",\"x-acs-trace-id\":\"55bff06f2a3b3959a3b4ebe0d82db4d9\",\"etag\":\"3z595CdEr91SeailwPZiaRg4\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":2390,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":3,\"KvInfo\":{\"Data\":{\"Brand\":\"Panasonic\",\"LotNo\":\"Y5N22DOM2021\",\"Description\":\"貼片铝電解電容\",\"DateCode\":\"2547\",\"QTY\":\"500\",\"MPN\":\"EEHZE1E331V\",\"Supplier\":\"上海英恒电子有限公司\",\"PN\":\"G051002139100999\"},\"KvCount\":8},\"SubImageId\":0}],\"Width\":3591},\"Message\":null,\"RequestId\":\"6243C43F-698A-5998-82B9-D5E80CA8DC6B\"}}",
+  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Fri, 08 May 2026 02:31:37 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"E65DABBE-FCB5-50E8-9222-15BFE3371A72\",\"x-acs-trace-id\":\"e51c58e51643725de5f7ff6407861fee\",\"etag\":\"3XfD1M97sewQ6hmlAjeikiw4\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":2390,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":3,\"KvInfo\":{\"Data\":{\"Brand\":\"Panasonic\",\"LotNo\":\"Y5N22DOM2021\",\"Description\":\"貼片铝電解電容\",\"DateCode\":\"2547\",\"QTY\":\"500\",\"MPN\":\"EEHZE1E331V\",\"Supplier\":\"上海英恒电子有限公司\",\"PN\":\"G051002139100999\"},\"KvCount\":8},\"SubImageId\":0}],\"Width\":3591},\"Message\":null,\"RequestId\":\"E65DABBE-FCB5-50E8-9222-15BFE3371A72\"}}",
   "CorrectionNotes": [
     "LotNo 被条码纠正: Y5N22DOM2021 -> Y5N22D0M2021"
   ],
@@ -44,5 +44,6 @@
     "threshold-128",
     "ocr-downscale-1500px"
   ],
+  "AiDebug": null,
   "Error": null
 }
