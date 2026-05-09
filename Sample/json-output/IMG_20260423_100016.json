@@ -1,10 +1,10 @@
 {
   "FileName": "IMG_20260423_100016.jpg",
-  "FilePath": "D:\\source\\Research\\C#\\ocr\\Sample\\IMG_20260423_100016.jpg",
+  "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_100016.jpg",
   "RelativePath": "IMG_20260423_100016.jpg",
-  "OutputJsonPath": "D:\\source\\Research\\C#\\ocr\\Sample\\json-output\\IMG_20260423_100016.json",
-  "OcrProvider": "Aliyun",
-  "AiProvider": "openvino",
+  "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_100016.json",
+  "OcrProvider": "Windows",
+  "AiProvider": "mock",
   "Barcodes": [
     {
       "Format": "QR_CODE",
@@ -32,42 +32,24 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "1W272CM: (P)HCM1A1305V2-R22-R1: (Q))250: Description: Inductor EAT·N: Magnetics 30051712013575: 4516019951: HCM1A1305V2-R22-R1: 250: (9D)JJ18: ES: (1L)MadeinChina:",
+  "Text": "回 「 ℃ 引 0 （ 0 ） 回 钆 叫 0 U! 9Pel,AJ 66 9 ^ 0 乙 L 乙 M 《 的 旧 閶 1 适 · 院 乙 ^ go ^ OH 上 ． & 乙 ^ go 以 OH （ 引 」 0 np 叫 」 osaa 9LS 巴 000 芤 眉 牖 鼎",
   "Fields": {
-    "PartNumber": "HCM1A1305V2-R22-R1",
-    "Description": "Inductor",
+    "PartNumber": "",
+    "Description": "",
     "Quantity": "250",
     "DateCode": "",
-    "LotNo": "30051712013575",
+    "LotNo": "",
     "Supplier": "",
     "Brand": "",
-    "MPN": "J18",
+    "MPN": "",
     "PO": "3005171201",
-    "HuId": ""
+    "HuId": null
   },
-  "AliRawStructuredFields": {
-    "1W272CM": "",
-    "(P)HCM1A1305V2-R22-R1": "",
-    "(Q))250": "",
-    "Description": "Inductor",
-    "EAT·N": "Magnetics",
-    "30051712013575": "",
-    "4516019951": "",
-    "HCM1A1305V2-R22-R1": "",
-    "250": "",
-    "(9D)JJ18": "",
-    "ES": "",
-    "(1L)MadeinChina": ""
-  },
-  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Fri, 08 May 2026 05:25:26 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"44ED4C5D-290D-583B-8DB9-DC9649AD580D\",\"x-acs-trace-id\":\"17b1e1f7816bcfde6dc41558d249d4a7\",\"etag\":\"3I07V7UgGPk/NygM+LiLH/g0\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":3072,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":2,\"KvInfo\":{\"Data\":{\"1W272CM\":\"\",\"(P)HCM1A1305V2-R22-R1\":\"\",\"(Q))250\":\"\",\"Description\":\"Inductor\",\"EAT·N\":\"Magnetics\",\"30051712013575\":\"\",\"4516019951\":\"\",\"HCM1A1305V2-R22-R1\":\"\",\"250\":\"\",\"(9D)JJ18\":\"\",\"ES\":\"\",\"(1L)MadeinChina\":\"\"},\"KvCount\":12},\"SubImageId\":0}],\"Width\":4096},\"Message\":null,\"RequestId\":\"44ED4C5D-290D-583B-8DB9-DC9649AD580D\"}}",
+  "AliRawStructuredFields": null,
+  "AliRawStructuredJson": null,
   "CorrectionNotes": [
     "PO 由条码补全: 3005171201",
-    "Quantity 由条码补全: 250",
-    "AI兜底[openvino] PartNumber=HCM1A1305V2-R22-R1 (conf=0.80, (P)HCM1A1305V2-R22-R1)",
-    "AI兜底[openvino] MPN=J18 (conf=0.80, (9D)JJ18)",
-    "AI兜底[openvino] LotNo=30051712013575 (conf=1.00, 30051712013575)",
-    "AI兜底[openvino] Description=Inductor (conf=1.00, Description)",
-    "AI兜底[openvino] DateCode=3005171201 (conf=0.80, 3005171201)"
+    "Quantity 由条码补全: 250"
   ],
   "AppliedPreprocessing": [
     "barcode-downscale-2000px",
@@ -75,9 +57,9 @@
     "ocr-downscale-1500px"
   ],
   "AiDebug": {
-    "Provider": "openvino",
-    "Prompt": "You are an OCR post-processing assistant.\r\nExtract fields from OCR and barcode data.\r\nReturn STRICT JSON only. No markdown. Unknown value return null.\r\n\r\nOutput schema:\r\n{\r\n  \"candidates\": {\r\n    \"PartNumber\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"MPN\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Quantity\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"LotNo\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Brand\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"PO\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"HuId\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Description\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"DateCode\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"},\r\n    \"Supplier\": {\"value\":\"\",\"confidence\":0.0,\"evidence\":\"\"}\r\n  }\r\n}\r\n\r\nRules:\r\n- Quantity should be numeric only when possible.\r\n- Confidence range is 0..1.\r\n- Only fill fields you are reasonably sure about.\r\n- Stop immediately after the closing JSON brace. No extra notes.\r\n\r\nBarcode values:\r\nDC135025042202-0019\u0000 | J18 | 30051712013575 | 3005171201 | 250\r\n\r\nAli structured fields:\r\n{\"1W272CM\":\"\",\"(P)HCM1A1305V2-R22-R1\":\"\",\"(Q))250\":\"\",\"Description\":\"Inductor\",\"EAT\\u00B7N\":\"Magnetics\",\"30051712013575\":\"\",\"4516019951\":\"\",\"HCM1A1305V2-R22-R1\":\"\",\"250\":\"\",\"(9D)JJ18\":\"\",\"ES\":\"\",\"(1L)MadeinChina\":\"\"}\r\n\r\n",
-    "RawResponse": "{\n  \"candidates\": {\n    \"PartNumber\": {\"value\":\"HCM1A1305V2-R22-R1\", \"confidence\":0.8, \"evidence\":\"(P)HCM1A1305V2-R22-R1\"},\n    \"MPN\": {\"value\":\"J18\", \"confidence\":0.8, \"evidence\":\"(9D)JJ18\"},\n    \"Quantity\": {\"value\":\"250\", \"confidence\":1.0, \"evidence\":\"(Q)250\"},\n    \"LotNo\": {\"value\":\"30051712013575\", \"confidence\":1.0, \"evidence\":\"30051712013575\"},\n    \"Brand\": {\"value\":\"Magnetics\", \"confidence\":0.6, \"evidence\":\"EAT·N\"},\n    \"PO\": {\"value\":null, \"confidence\":0.0, \"evidence\":null},\n    \"HuId\": {\"value\":null, \"confidence\":0.0, \"evidence\":null},\n    \"Description\": {\"value\":\"Inductor\", \"confidence\":1.0, \"evidence\":\"Description\"},\n    \"DateCode\": {\"value\":\"3005171201\", \"confidence\":0.8, \"evidence\":\"3005171201\"},\n    \"Supplier\": {\"value\":null, \"confidence\":0.0, \"evidence\":null}\n  }\n}"
+    "Provider": "mock-ai-v1",
+    "Prompt": null,
+    "RawResponse": "{\"Quantity\":{\"Value\":\"0019\",\"Confidence\":0.72,\"Evidence\":\"mock-ai: barcode numeric fallback\"},\"PO\":{\"Value\":\"3005171201\",\"Confidence\":0.84,\"Evidence\":\"mock-ai: 10-digit barcode\"}}"
   },
   "Error": null
 }

@@ -12,7 +12,9 @@ internal sealed class MainForm : Form
     private readonly TextBox _inputBox = new();
     private readonly TextBox _outputBox = new();
     private readonly ComboBox _providerBox = new();
+    private readonly ComboBox _barcodeProviderBox = new();
     private readonly ComboBox _aiProviderBox = new();
+    private readonly ComboBox _logVerbosityBox = new();
     private readonly ComboBox _templateBox = new();
     private readonly DataGridView _fieldGrid = new();
     private readonly TextBox _logBox = new();
@@ -68,15 +70,16 @@ internal sealed class MainForm : Form
             ColumnCount = 1,
             RowCount = 3
         };
-        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 106));
+        panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 138));
         panel.RowStyles.Add(new RowStyle(SizeType.Absolute, 28));
         panel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
 
-        var top = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 3 };
+        var top = new TableLayoutPanel { Dock = DockStyle.Fill, ColumnCount = 4, RowCount = 4 };
         top.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
         top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 48));
         top.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 120));
         top.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 52));
+        top.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
         top.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
         top.RowStyles.Add(new RowStyle(SizeType.Absolute, 32));
         top.RowStyles.Add(new RowStyle(SizeType.Absolute, 36));
@@ -87,6 +90,10 @@ internal sealed class MainForm : Form
         _providerBox.Items.AddRange(new object[] { "Aliyun", "Windows", "Paddle" });
         _providerBox.SelectedItem = options.Provider.ToString();
 
+        _barcodeProviderBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        _barcodeProviderBox.Items.AddRange(new object[] { "ZXing", "WechatQrCode" });
+        _barcodeProviderBox.SelectedItem = options.BarcodeProvider.ToString();
+
         _aiProviderBox.DropDownStyle = ComboBoxStyle.DropDownList;
         _aiProviderBox.Items.AddRange(new object[] { "ollama", "openvino", "bailian", "mock" });
         var configuredAiProvider = (ConfigurationManager.AppSettings["AiProvider"] ?? "ollama").Trim();
@@ -95,7 +102,12 @@ internal sealed class MainForm : Form
             .FirstOrDefault(x => string.Equals(x, configuredAiProvider, StringComparison.OrdinalIgnoreCase));
         _aiProviderBox.SelectedItem = matchedAiProvider ?? "ollama";
 
-        AddRow(top, 1, "OCR 提供者", _providerBox, string.Empty, "AI 提供者", _aiProviderBox, string.Empty);
+        _logVerbosityBox.DropDownStyle = ComboBoxStyle.DropDownList;
+        _logVerbosityBox.Items.AddRange(new object[] { "简洁", "详细" });
+        _logVerbosityBox.SelectedItem = options.LogVerbosity == LogVerbosity.Concise ? "简洁" : "详细";
+
+        AddRow(top, 1, "OCR 提供者", _providerBox, string.Empty, "条码提供者", _barcodeProviderBox, string.Empty);
+        AddRow(top, 2, "AI 提供者", _aiProviderBox, string.Empty, "日志级别", _logVerbosityBox, string.Empty);
 
         var actionPanel = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.LeftToRight };
 
@@ -118,7 +130,7 @@ internal sealed class MainForm : Form
         var host = new Panel { Dock = DockStyle.Fill };
         host.Controls.Add(actionPanel);
         actionPanel.Dock = DockStyle.Fill;
-        top.Controls.Add(host, 0, 2);
+        top.Controls.Add(host, 0, 3);
         top.SetColumnSpan(host, 4);
 
         panel.Controls.Add(top, 0, 0);
@@ -128,6 +140,8 @@ internal sealed class MainForm : Form
         _logBox.Multiline = true;
         _logBox.ScrollBars = ScrollBars.Both;
         _logBox.ReadOnly = true;
+        _logBox.WordWrap = true;
+        _logBox.MaxLength = 0;
         panel.Controls.Add(_logBox, 0, 2);
 
         return panel;
@@ -355,6 +369,10 @@ internal sealed class MainForm : Form
     private AppOptions BuildOptionsFromUi()
     {
         var provider = Enum.TryParse<OcrProvider>(_providerBox.SelectedItem?.ToString(), true, out var p) ? p : OcrProvider.Aliyun;
+        var barcodeProvider = Enum.TryParse<BarcodeProvider>(_barcodeProviderBox.SelectedItem?.ToString(), true, out var b) ? b : BarcodeProvider.ZXing;
+        var logVerbosity = string.Equals(_logVerbosityBox.SelectedItem?.ToString(), "简洁", StringComparison.OrdinalIgnoreCase)
+            ? LogVerbosity.Concise
+            : LogVerbosity.Detailed;
         var selectedTemplate = _templateBox.SelectedItem?.ToString() ?? _baseOptions.TemplateName;
 
         return _baseOptions with
@@ -362,6 +380,8 @@ internal sealed class MainForm : Form
             InputDirectory = _inputBox.Text.Trim(),
             OutputDirectory = _outputBox.Text.Trim(),
             Provider = provider,
+            BarcodeProvider = barcodeProvider,
+            LogVerbosity = logVerbosity,
             LanguageTag = _baseOptions.LanguageTag,
             AliEndpoint = _baseOptions.AliEndpoint,
             TemplateName = selectedTemplate,
@@ -455,6 +475,8 @@ internal sealed class MainForm : Form
         SetAppSetting(app, "InputDirectory", cfg.InputDirectory);
         SetAppSetting(app, "OutputDirectory", cfg.OutputDirectory);
         SetAppSetting(app, "OcrProvider", cfg.Provider.ToString());
+        SetAppSetting(app, "BarcodeProvider", cfg.BarcodeProvider.ToString());
+        SetAppSetting(app, "LogVerbosity", cfg.LogVerbosity.ToString());
         SetAppSetting(app, "OcrTemplateName", cfg.TemplateName);
         SetAppSetting(app, "AiProvider", _aiProviderBox.SelectedItem?.ToString() ?? "ollama");
 
@@ -640,11 +662,13 @@ internal sealed class MainForm : Form
     {
         if (InvokeRequired)
         {
-            BeginInvoke(() => AppendLog(message));
+            Invoke(new Action(() => AppendLog(message)));
             return;
         }
 
-        _logBox.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
+        if (_logBox.IsDisposed) return;
+        var line = $"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}";
+        _logBox.AppendText(line);
     }
 
     private static string[] SplitCsv(string? text) =>

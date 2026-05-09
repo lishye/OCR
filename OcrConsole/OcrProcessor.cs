@@ -14,6 +14,8 @@ using AlibabaCloud.OpenApiClient.Models;
 using AlibabaCloud.SDK.Ocr_api20210707;
 using AlibabaCloud.SDK.Ocr_api20210707.Models;
 using AlibabaCloud.TeaUtil.Models;
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
 using Windows.Globalization;
 using Windows.Graphics.Imaging;
 using Windows.Media.Ocr;
@@ -107,6 +109,7 @@ internal sealed class OcrProcessor
             var sw = Stopwatch.StartNew();
             try
             {
+                var isDetailedLog = options.LogVerbosity == LogVerbosity.Detailed;
                 if (control is not null)
                 {
                     await control.WaitIfPausedAsync(cancellationToken);
@@ -119,16 +122,26 @@ internal sealed class OcrProcessor
                 {
                     await control.WaitIfPausedAsync(cancellationToken);
                 }
-                var barcodes = ReadBarcodes(processedImage);
+                var barcodeInputVariants = processedImage.Variants
+                    .Where(v => !v.Name.StartsWith("ocr-", StringComparison.OrdinalIgnoreCase))
+                    .Select(v => v.Name)
+                    .ToArray();
+                progress?.Report($"  条码识别-输入: Provider={options.BarcodeProvider}, 变体=[{string.Join(", ", barcodeInputVariants)}]");
+                var barcodes = ReadBarcodes(processedImage, options.BarcodeProvider);
                 progress?.Report($"  条码识别: {sw.ElapsedMilliseconds}ms");
+                progress?.Report($"  条码识别-输出: {FormatBarcodeResults(barcodes, isDetailedLog)}");
+                //progress?.Report(string.Empty);
                 sw.Restart();
 
                 if (control is not null)
                 {
                     await control.WaitIfPausedAsync(cancellationToken);
                 }
+                progress?.Report($"  OCR识别-输入: Provider={options.Provider}, Image={Path.GetFileName(imageFile)}, Lang={options.LanguageTag}, Barcodes={barcodes.Count}");
                 var ocr = await ReadOcrAsync(processedImage, imageFile, options, aliClient);
                 progress?.Report($"  OCR识别: {sw.ElapsedMilliseconds}ms");
+                progress?.Report($"  OCR识别-输出: {FormatOcrOutput(ocr, isDetailedLog)}");
+                //progress?.Report(string.Empty);
 
                 var values = ResolveValues(ocr.AliRawStructuredFields, ocr.Text, barcodes, activeRules);
                 var extracted = BuildFields(values);
@@ -140,14 +153,22 @@ internal sealed class OcrProcessor
                 var shouldUseAiProvider = ShouldUseAiProvider(corrected);
                 if (shouldUseAiProvider)
                 {
+                    progress?.Report($"  AI补全-输入: Provider={_aiProvider ?? "none"}, Current={FormatFieldsForLog(corrected, isDetailedLog)}, OCR={Preview(ocr.Text, isDetailedLog ? null : 180)}, Barcodes={FormatBarcodeValues(barcodes, isDetailedLog)}");
                     sw.Restart();
                 }
-                var aiApply = await ApplyAiProviderAsync(ocr, barcodes, corrected, mergedNotes, cancellationToken);
+                else
+                {
+                    progress?.Report($"  AI补全-输入: 已跳过，Current={FormatFieldsForLog(corrected, isDetailedLog)}");
+                }
+
+                var aiApply = await ApplyAiProviderAsync(ocr, barcodes, corrected, mergedNotes, progress, isDetailedLog, cancellationToken);
                 var finalized = aiApply.Fields;
                 if (shouldUseAiProvider)
                 {
                     progress?.Report($"  AI补全: {sw.ElapsedMilliseconds}ms");
                 }
+                progress?.Report($"  AI补全-输出: {aiApply.Summary}");
+                //progress?.Report(string.Empty);
 
                 var result = new ImageRecognitionResult(
                     FileName: Path.GetFileName(imageFile),
@@ -203,9 +224,11 @@ internal sealed class OcrProcessor
         IReadOnlyList<BarcodeResult> barcodes,
         ExtractedFields current,
         List<string> notes,
+        IProgress<string>? progress,
+        bool isDetailedLog,
         CancellationToken cancellationToken)
     {
-        if (!ShouldUseAiProvider(current)) return new AiApplyResult(current, null);
+        if (!ShouldUseAiProvider(current)) return new AiApplyResult(current, null, "跳过: 关键字段已齐全");
 
         var response = await _aiResolver.ResolveAsync(
             new AiProviderRequest(
@@ -220,17 +243,28 @@ internal sealed class OcrProcessor
         if (response is null || response.Candidates.Count == 0)
         {
             notes.Add("AI兜底: 未产出可用候选");
-            return new AiApplyResult(current, debug);
+            return new AiApplyResult(current, debug, "无可用候选");
         }
 
         var updated = current;
+        var accepted = new List<string>();
         foreach (var kv in response.Candidates)
         {
             if (kv.Value.Confidence < 0.7 || string.IsNullOrWhiteSpace(kv.Value.Value)) continue;
             updated = SetFieldIfEmptyOrLowConfidence(updated, kv.Key, kv.Value.Value!, notes, kv.Value, response.ProviderName);
+            accepted.Add($"{kv.Key}={Preview(kv.Value.Value, isDetailedLog ? null : 30)}(conf={kv.Value.Confidence:0.00})");
         }
 
-        return new AiApplyResult(updated, debug);
+        var summary = accepted.Count > 0
+            ? $"Provider={response.ProviderName}, Candidates={response.Candidates.Count}, Accepted={accepted.Count}[{string.Join(", ", accepted)}], Final={FormatFieldsForLog(updated, isDetailedLog)}"
+            : $"Provider={response.ProviderName}, Candidates={response.Candidates.Count}, Accepted=0, Final={FormatFieldsForLog(updated, isDetailedLog)}";
+
+        if (progress is not null && debug is not null)
+        {
+            progress.Report($"  AI调试: PromptLen={debug.Prompt?.Length ?? 0}, RawLen={debug.RawResponse?.Length ?? 0}");
+        }
+
+        return new AiApplyResult(updated, debug, summary);
     }
 
     private AiDebugInfo? BuildAiDebugInfo(AiProviderResponse? response)
@@ -245,7 +279,64 @@ internal sealed class OcrProcessor
         return defaultValue;
     }
 
-    private sealed record AiApplyResult(ExtractedFields Fields, AiDebugInfo? Debug);
+    private sealed record AiApplyResult(ExtractedFields Fields, AiDebugInfo? Debug, string Summary);
+
+    private static string FormatBarcodeResults(IReadOnlyList<BarcodeResult> barcodes, bool isDetailedLog)
+    {
+        if (barcodes.Count == 0) return "Count=0";
+
+        var rows = isDetailedLog ? barcodes : barcodes.Take(6);
+        var previewItems = rows.Select(b => $"{b.Format}:{Preview(b.Value, isDetailedLog ? null : 24)}@{b.SourceVariant}");
+
+        var suffix = !isDetailedLog && barcodes.Count > 6 ? $", ...(+{barcodes.Count - 6})" : string.Empty;
+        return $"Count={barcodes.Count}, Items=[{string.Join(", ", previewItems)}{suffix}]";
+    }
+
+    private static string FormatBarcodeValues(IReadOnlyList<BarcodeResult> barcodes, bool isDetailedLog)
+    {
+        if (barcodes.Count == 0) return "none";
+        var values = (isDetailedLog ? barcodes : barcodes.Take(6)).Select(b => Preview(b.Value, isDetailedLog ? null : 24));
+        var suffix = !isDetailedLog && barcodes.Count > 6 ? $", ...(+{barcodes.Count - 6})" : string.Empty;
+        return $"[{string.Join(", ", values)}{suffix}]";
+    }
+
+    private static string FormatOcrOutput(OcrReadResult ocr, bool isDetailedLog)
+    {
+        var rawFieldCount = ocr.AliRawStructuredFields?.Count ?? 0;
+        var mapped = ocr.MappedFields is null ? "none" : FormatFieldsForLog(ocr.MappedFields, isDetailedLog);
+        return $"TextLen={ocr.Text.Length}, Text={Preview(ocr.Text, isDetailedLog ? null : 180)}, Mapped={mapped}, RawFieldCount={rawFieldCount}";
+    }
+
+    private static string FormatFieldsForLog(ExtractedFields fields, bool isDetailedLog)
+    {
+        var items = new List<string>();
+        AddIfNotEmpty(items, "PartNumber", fields.PartNumber, isDetailedLog);
+        AddIfNotEmpty(items, "MPN", fields.MPN, isDetailedLog);
+        AddIfNotEmpty(items, "Quantity", fields.Quantity, isDetailedLog);
+        AddIfNotEmpty(items, "DateCode", fields.DateCode, isDetailedLog);
+        AddIfNotEmpty(items, "LotNo", fields.LotNo, isDetailedLog);
+        AddIfNotEmpty(items, "Brand", fields.Brand, isDetailedLog);
+        AddIfNotEmpty(items, "Supplier", fields.Supplier, isDetailedLog);
+        AddIfNotEmpty(items, "PO", fields.PO, isDetailedLog);
+        AddIfNotEmpty(items, "HuId", fields.HuId, isDetailedLog);
+
+        return items.Count == 0 ? "empty" : string.Join(", ", items);
+    }
+
+    private static void AddIfNotEmpty(List<string> items, string key, string? value, bool isDetailedLog)
+    {
+        if (string.IsNullOrWhiteSpace(value)) return;
+        items.Add($"{key}={Preview(value, isDetailedLog ? null : 30)}");
+    }
+
+    private static string Preview(string? text, int? max)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return string.Empty;
+        var normalized = NormalizeWhitespace(text);
+        if (max is null || max <= 0) return normalized;
+        if (normalized.Length <= max) return normalized;
+        return normalized[..max.Value] + "...";
+    }
 
     private static bool ShouldUseAiProvider(ExtractedFields fields)
     {
@@ -891,7 +982,40 @@ internal sealed class OcrProcessor
         return new ProcessedImage(variants, steps);
     }
 
-    private static IReadOnlyList<BarcodeResult> ReadBarcodes(ProcessedImage processedImage)
+    private static IReadOnlyList<BarcodeResult> ReadBarcodes(ProcessedImage processedImage, BarcodeProvider provider)
+    {
+        return provider switch
+        {
+            BarcodeProvider.ZXing => ReadBarcodesByZxing(processedImage),
+            BarcodeProvider.WechatQrCode => ReadBarcodesByWechatAndZxingFallback(processedImage),
+            _ => ReadBarcodesByZxing(processedImage)
+        };
+    }
+
+    private static IReadOnlyList<BarcodeResult> ReadBarcodesByWechatAndZxingFallback(ProcessedImage processedImage)
+    {
+        var wechatResults = ReadBarcodesByWechatQrCode(processedImage);
+        var zxingNonQrResults = ReadBarcodesByZxing(processedImage, includeQrFormats: false);
+
+        var merged = new List<BarcodeResult>(wechatResults.Count + zxingNonQrResults.Count);
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var item in wechatResults)
+        {
+            var key = $"{item.Format}:{item.Value}";
+            if (seen.Add(key)) merged.Add(item);
+        }
+
+        foreach (var item in zxingNonQrResults)
+        {
+            var key = $"{item.Format}:{item.Value}";
+            if (seen.Add(key)) merged.Add(item);
+        }
+
+        return merged;
+    }
+
+    private static IReadOnlyList<BarcodeResult> ReadBarcodesByZxing(ProcessedImage processedImage, bool includeQrFormats = true)
     {
         var values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var barcodeResults = new List<BarcodeResult>();
@@ -918,7 +1042,7 @@ internal sealed class OcrProcessor
         foreach (var variant in processedImage.Variants.Where(v => !v.Name.StartsWith("ocr-", StringComparison.OrdinalIgnoreCase)))
         {
             Collect(reader.DecodeMultiple(variant.Bitmap), variant.Name);
-            if (qrVariantNames.Contains(variant.Name))
+            if (includeQrFormats && qrVariantNames.Contains(variant.Name))
                 Collect(qrReader.DecodeMultiple(variant.Bitmap), variant.Name + "+qr");
         }
 
@@ -929,12 +1053,97 @@ internal sealed class OcrProcessor
             if (results is null || results.Length == 0) return;
             foreach (var item in results)
             {
+                if (!includeQrFormats && IsQrLikeFormat(item.BarcodeFormat)) continue;
+
                 var value = NormalizeWhitespace(item.Text);
                 var key = $"{item.BarcodeFormat}:{value}";
                 if (string.IsNullOrWhiteSpace(value) || !values.Add(key)) continue;
                 barcodeResults.Add(new BarcodeResult(item.BarcodeFormat.ToString(), value, source));
             }
         }
+    }
+
+    private static bool IsQrLikeFormat(BarcodeFormat format)
+    {
+        return format is BarcodeFormat.QR_CODE;
+            // or BarcodeFormat.DATA_MATRIX
+            // or BarcodeFormat.AZTEC
+            // or BarcodeFormat.PDF_417
+            // or BarcodeFormat.MAXICODE;
+    }
+
+    private static IReadOnlyList<BarcodeResult> ReadBarcodesByWechatQrCode(ProcessedImage processedImage)
+    {
+        var modelDir = ResolveWechatQrCodeModelDirectory();
+        if (string.IsNullOrWhiteSpace(modelDir))
+        {
+            throw new DirectoryNotFoundException("未找到 WechatQrCode 模型目录。请在 App.config 设置 WechatQrCodeModelDirectory，或将模型放到 ../wechatqrcode/models、models/wechatqrcode。\n需要文件: detect.prototxt, detect.caffemodel, sr.prototxt, sr.caffemodel");
+        }
+
+        var detectProto = Path.Combine(modelDir, "detect.prototxt");
+        var detectModel = Path.Combine(modelDir, "detect.caffemodel");
+        var srProto = Path.Combine(modelDir, "sr.prototxt");
+        var srModel = Path.Combine(modelDir, "sr.caffemodel");
+
+        var requiredFiles = new[] { detectProto, detectModel, srProto, srModel };
+        var missing = requiredFiles.Where(path => !File.Exists(path)).ToList();
+        if (missing.Count > 0)
+        {
+            throw new FileNotFoundException($"WechatQrCode 模型文件缺失: {string.Join(", ", missing)}");
+        }
+
+        var values = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var barcodeResults = new List<BarcodeResult>();
+
+        using var reader = WeChatQRCode.Create(detectProto, detectModel, srProto, srModel);
+        foreach (var variant in processedImage.Variants.Where(v => !v.Name.StartsWith("ocr-", StringComparison.OrdinalIgnoreCase)))
+        {
+            using var mat = BitmapConverter.ToMat(variant.Bitmap);
+            reader.DetectAndDecode(mat, out _, out var results);
+            Collect(results, variant.Name + "+wechat");
+        }
+
+        return barcodeResults;
+
+        void Collect(string[]? results, string source)
+        {
+            if (results is null || results.Length == 0) return;
+            foreach (var item in results)
+            {
+                var value = NormalizeWhitespace(item);
+                var key = $"WECHAT_QRCODE:{value}";
+                if (string.IsNullOrWhiteSpace(value) || !values.Add(key)) continue;
+                barcodeResults.Add(new BarcodeResult("WECHAT_QRCODE", value, source));
+            }
+        }
+    }
+
+    private static string? ResolveWechatQrCodeModelDirectory()
+    {
+        var configured = ConfigurationManager.AppSettings["WechatQrCodeModelDirectory"];
+        if (!string.IsNullOrWhiteSpace(configured))
+        {
+            var configuredPath = Path.GetFullPath(configured);
+            if (Directory.Exists(configuredPath)) return configuredPath;
+        }
+
+        var candidates = new List<string>();
+        var baseDir = AppContext.BaseDirectory;
+        candidates.Add(Path.GetFullPath(Path.Combine(baseDir, "..", "wechatqrcode", "models")));
+        candidates.Add(Path.GetFullPath(Path.Combine(baseDir, "..", "..", "..", "..", "models", "wechatqrcode")));
+
+        var current = new DirectoryInfo(Environment.CurrentDirectory);
+        while (current is not null)
+        {
+            if (File.Exists(Path.Combine(current.FullName, "OCR.sln")))
+            {
+                candidates.Add(Path.Combine(current.FullName, "models", "wechatqrcode"));
+                break;
+            }
+            current = current.Parent;
+        }
+
+        return candidates.FirstOrDefault(Directory.Exists);
     }
 
     private static System.Drawing.Bitmap ToGrayscaleBitmap(System.Drawing.Bitmap source)

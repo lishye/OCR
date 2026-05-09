@@ -67,6 +67,8 @@ internal sealed record AppOptions(
     string InputDirectory,
     string OutputDirectory,
     OcrProvider Provider,
+    BarcodeProvider BarcodeProvider,
+    LogVerbosity LogVerbosity,
     string LanguageTag,
     string? AccessKeyId,
     string? AccessKeySecret,
@@ -85,6 +87,10 @@ internal sealed record AppOptions(
 
         var providerText = args.Get("ocr-provider") ?? ConfigurationManager.AppSettings["OcrProvider"];
         var provider = ParseProvider(providerText);
+        var barcodeProviderText = args.Get("barcode-provider") ?? ConfigurationManager.AppSettings["BarcodeProvider"];
+        var barcodeProvider = ParseBarcodeProvider(barcodeProviderText);
+        var logVerbosityText = args.Get("log-verbosity") ?? ConfigurationManager.AppSettings["LogVerbosity"];
+        var logVerbosity = ParseLogVerbosity(logVerbosityText);
 
         var localDbConnectionString = ConfigurationManager.AppSettings["LocalDbConnectionString"]
             ?? "Data Source=(localdb)\\MSSQLLocalDB;Initial Catalog=OcrLocalDb;Integrated Security=True;TrustServerCertificate=True;";
@@ -100,6 +106,8 @@ internal sealed record AppOptions(
             InputDirectory: input,
             OutputDirectory: output,
             Provider: provider,
+            BarcodeProvider: barcodeProvider,
+            LogVerbosity: logVerbosity,
             LanguageTag: language,
             AccessKeyId: args.Get("ak") ?? SettingHelper.GetSettingOrEnv("AccessKeyID", "OCR_ALI_ACCESS_KEY_ID"),
             AccessKeySecret: args.Get("sk") ?? SettingHelper.GetSettingOrEnv("AccessKeySecret", "OCR_ALI_ACCESS_KEY_SECRET"),
@@ -123,6 +131,18 @@ internal sealed record AppOptions(
             : OcrProvider.Aliyun;
     }
 
+    private static BarcodeProvider ParseBarcodeProvider(string? providerText)
+    {
+        if (string.IsNullOrWhiteSpace(providerText)) return BarcodeProvider.ZXing;
+
+        if (string.Equals(providerText, "WechatQrCoce", StringComparison.OrdinalIgnoreCase)) return BarcodeProvider.WechatQrCode;
+        if (string.Equals(providerText, "WechatQRCode", StringComparison.OrdinalIgnoreCase)) return BarcodeProvider.WechatQrCode;
+
+        return Enum.TryParse<BarcodeProvider>(providerText, true, out var parsedProvider)
+            ? parsedProvider
+            : BarcodeProvider.ZXing;
+    }
+
     private static IReadOnlyList<FieldRule> ParseFieldRules(string? json)
     {
         if (string.IsNullOrWhiteSpace(json)) return [];
@@ -135,6 +155,18 @@ internal sealed record AppOptions(
         {
             return [];
         }
+    }
+
+    private static LogVerbosity ParseLogVerbosity(string? text)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return LogVerbosity.Detailed;
+
+        if (string.Equals(text, "简洁", StringComparison.OrdinalIgnoreCase)) return LogVerbosity.Concise;
+        if (string.Equals(text, "详细", StringComparison.OrdinalIgnoreCase)) return LogVerbosity.Detailed;
+
+        return Enum.TryParse<LogVerbosity>(text, true, out var parsed)
+            ? parsed
+            : LogVerbosity.Detailed;
     }
 }
 
@@ -184,4 +216,16 @@ internal enum OcrProvider
     Aliyun,
     Windows,
     Paddle
+}
+
+internal enum BarcodeProvider
+{
+    ZXing,
+    WechatQrCode
+}
+
+internal enum LogVerbosity
+{
+    Concise,
+    Detailed
 }

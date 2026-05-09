@@ -3,8 +3,8 @@
   "FilePath": "D:\\source\\Research\\C#\\OCR\\Sample\\IMG_20260423_094206.jpg",
   "RelativePath": "IMG_20260423_094206.jpg",
   "OutputJsonPath": "D:\\source\\Research\\C#\\OCR\\Sample\\json-output\\IMG_20260423_094206.json",
-  "OcrProvider": "Aliyun",
-  "AiProvider": "ollama",
+  "OcrProvider": "Windows",
+  "AiProvider": "mock",
   "Barcodes": [
     {
       "Format": "QR_CODE",
@@ -12,32 +12,27 @@
       "SourceVariant": "original"
     }
   ],
-  "Text": "Brand: Panasonic LotNo: Y5N22DOM2021 Description: 貼片铝電解電容 DateCode: 2547 QTY: 500 MPN: EEHZE1E331V Supplier: 上海英恒电子有限公司 PN: G051002139100999",
+  "Text": "0 0 、 0 G-PLJLSE 丷 金 脉 PN ． G 1002139100999 EEHZEIE331V Description: 貼 片 铝 電 解 電 容 Supptier• 上 海 英 恒 电 子 有 限 公 司 QTY ． 5 Date Code 2547 Brand Panasomc L01 No Y5N22DOM2021",
   "Fields": {
     "PartNumber": "G051002139100999",
-    "Description": "貼片铝電解電容",
+    "Description": "",
     "Quantity": "500",
     "DateCode": "2025-11-17",
     "LotNo": "Y5N22D0M2021",
     "Supplier": "上海英恒电子有限公司",
     "Brand": "Panasonic",
     "MPN": "EEHZE1E331V",
-    "PO": "",
-    "HuId": ""
+    "PO": null,
+    "HuId": null
   },
-  "AliRawStructuredFields": {
-    "Brand": "Panasonic",
-    "LotNo": "Y5N22DOM2021",
-    "Description": "貼片铝電解電容",
-    "DateCode": "2547",
-    "QTY": "500",
-    "MPN": "EEHZE1E331V",
-    "Supplier": "上海英恒电子有限公司",
-    "PN": "G051002139100999"
-  },
-  "AliRawStructuredJson": "{\"Headers\":{\"date\":\"Fri, 08 May 2026 02:31:37 GMT\",\"connection\":\"keep-alive\",\"keep-alive\":\"timeout=25\",\"access-control-allow-origin\":\"*\",\"access-control-expose-headers\":\"*\",\"x-acs-request-id\":\"E65DABBE-FCB5-50E8-9222-15BFE3371A72\",\"x-acs-trace-id\":\"e51c58e51643725de5f7ff6407861fee\",\"etag\":\"3XfD1M97sewQ6hmlAjeikiw4\"},\"StatusCode\":200,\"Body\":{\"Code\":null,\"Data\":{\"Height\":2390,\"SubImageCount\":1,\"SubImages\":[{\"Angle\":3,\"KvInfo\":{\"Data\":{\"Brand\":\"Panasonic\",\"LotNo\":\"Y5N22DOM2021\",\"Description\":\"貼片铝電解電容\",\"DateCode\":\"2547\",\"QTY\":\"500\",\"MPN\":\"EEHZE1E331V\",\"Supplier\":\"上海英恒电子有限公司\",\"PN\":\"G051002139100999\"},\"KvCount\":8},\"SubImageId\":0}],\"Width\":3591},\"Message\":null,\"RequestId\":\"E65DABBE-FCB5-50E8-9222-15BFE3371A72\"}}",
+  "AliRawStructuredFields": null,
+  "AliRawStructuredJson": null,
   "CorrectionNotes": [
-    "LotNo 被条码纠正: Y5N22DOM2021 -> Y5N22D0M2021"
+    "PartNumber 被条码纠正: EEHZE1E331V -> G051002139100999",
+    "Quantity 由条码补全: 500",
+    "LotNo 由条码补全: Y5N22D0M2021",
+    "Brand 由条码补全: Panasonic",
+    "Supplier 由条码补全: 上海英恒电子有限公司"
   ],
   "AppliedPreprocessing": [
     "barcode-downscale-2000px",

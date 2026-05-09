@@ -51,7 +51,7 @@ class BarcodeScanner:
         if not hasattr(cv2, "wechat_qrcode_WeChatQRCode"):
             return None
 
-        model_root = self.model_dir / "models"
+        model_root = self.model_dir / "../wechatqrcode/models"
         detect_proto = model_root / "detect.prototxt"
         detect_model = model_root / "detect.caffemodel"
         sr_proto = model_root / "sr.prototxt"

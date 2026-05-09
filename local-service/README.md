@@ -1,4 +1,4 @@
-# Local OCR Service (OpenVINO GenAI + FastAPI)
+# Local Service (OpenVINO GenAI + FastAPI)
 
 ## 1) Install
 
@@ -47,7 +47,7 @@ Notes:
 - LLM model is loaded lazily on first request from `qwen2.5_7b_ov_int4/` directory.
 - Set `_LLM_DEVICE = "GPU"` / `"NPU"` / `"CPU"` in `app.py` as needed.
 
-# Local OCR Service (Paddle + FastAPI) 启动服务
+# Local Service (Paddle + FastAPI) 启动服务
 
 ```powershell
 wsl -e bash -lc "cd '/mnt/d/source/Research/C#/OCR/local-service'; bash ./start-paddle-wsl.sh"
