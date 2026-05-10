@@ -111,11 +111,11 @@ OCR_BAILIAN_API_KEY=your_bailian_api_key
 
 ```json
 {
-  "response": "{ \"candidates\": { ... } }"
+  "response": "{ \"PartNumber\": \"HCM1A1305V2-R22-R1\", \"Quantity\": \"250\", \"LotNo\": \"30051712013575\", \"DateCode\": \"20230517\" }"
 }
 ```
 
-`fields` 默认为空，结构化字段仍由 C# 规则引擎提取。
+> `response` 字段是 LLM 的原始输出字符串，内容应为扁平 JSON 对象，C# 端会解析 `PartNumber`、`Quantity`、`LotNo`、`DateCode`。
 
 ### 本地服务启动
 
@@ -155,5 +155,3 @@ D:\source\Research\LLaMA-Factory> llamafactory_env\Scripts\activate
 llamafactory-cli version
 llamafactory-cli webui
 ```
-
-http://localhost:7860/

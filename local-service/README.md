@@ -39,9 +39,11 @@ Response JSON:
 
 ```json
 {
-  "response": "{ \"candidates\": { ... } }"
+  "response": "{ \"PartNumber\": \"HCM1A1305V2-R22-R1\", \"Quantity\": \"250\", \"LotNo\": \"30051712013575\", \"DateCode\": \"20230517\" }"
 }
 ```
+
+> `response` 是一个字符串，字符串内容为扁平 JSON 对象。该接口不直接返回 `fields` 结构，C# 应用会解析该 `response` 并将结果补充到 OCR 结构化字段中。
 
 Notes:
 - LLM model is loaded lazily on first request from `qwen2.5_7b_ov_int4/` directory.
